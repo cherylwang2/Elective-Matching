@@ -23,44 +23,42 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
 @app.route('/')
 def index():
-    return render_template('dashboard.html',title='Hello')
+    return render_template('signup.html',title='Hello')
 
-@app.route('/greet/', methods=["GET", "POST"])
-def greet():
-    if request.method == 'GET':
-        return render_template('signup.html', title='Customized Greeting')
+@app.route('/view/')
+def view():
+    pass
+    #classlist = courses.getallcourses()
+    #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
+    #return render_template('view.html', classes = classlist)
+
+@app.route('/dashboard/', methods=["GET", "POST"])
+def dashboard():
+    if user['status'] == 'STUDENT':
+        if request.method == 'GET':
+            return render_template('dashboard.html')
+        else:
+            try:
+                #the form will have their top 5 courses 
+                #request.form etc etc etc
+                return render_template('dashboard.html', class1=, class2=, etc.)
+            except:
+                flash('invalid entry: please enter 5 courses')
+                return render_template('dashboard.html')
+    if user['status'] == 'PROFESSOR':
+        if request.method == 'GET':
+            return render_template('prof_courseDetail.html')
+        #add a course/edit an existing course
+        #will it ever be POST for professors?
     else:
-        try:
-            username = request.form['username'] # throws error if there's trouble
-            flash('form submission successful')
-            return render_template('greet.html',
-                                   title='Welcome '+username,
-                                   name=username)
+        flash('Please log in!')
+        return redirect(url_for(index))
 
-        except Exception as err:
-            flash('form submission error'+str(err))
-            return redirect( url_for('index') )
-
-@app.route('/formecho/', methods=['GET','POST'])
-def formecho():
-    if request.method == 'GET':
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data=request.args)
-    elif request.method == 'POST':
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data=request.form)
-    else:
-        # maybe PUT?
-        return render_template('form_data.html',
-                               method=request.method,
-                               form_data={})
-
-@app.route('/testform/')
-def testform():
-    # these forms go to the formecho route
-    return render_template('testform.html')
+@app.route('/course/<varchar:courseid>')
+    pass
+    #courseInfo = courses.getCourseInfo(courseid)
+    #select course info
+    #return render_template('course.html', courseInfo=courseInfo)
 
 
 @app.before_first_request
