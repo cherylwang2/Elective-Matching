@@ -1,36 +1,32 @@
 /* the --color-header and others are CSS variables, which we access later. 
 */
-
-HTML {
-    --color-header: #007ea9;  /* color for H1-H6 and others. was deepskyblue but poor contrast. */
-    --color-hilite: #b50000;  /* was red, but this avoids WAVE contrast errors */ 
-    --color-focus: #56B929;
-    --font-family: Verdana;
-    font-family: var(--font-family)
-}
-
 /* For flashed messages; make them stand out using red and italics */
 
+body {
+    margin: 2%;
+    margin-top: 0.2%;
+}
+
 #messages {
-    color: var(--color-hilite);
+    color: #084484;
     font-style: italic;
 }
 
 
 h1 {
     font-size: 200%;
-    color: var(--color-header);
+    color: #084484;
 }
 
-h2, h3 {
-    color: var(--color-header);
+h2, h3, h4 {
+    color: #084484;
 }
     
 
 /* for a simple navbar. Talk to Scott if you want drop-downs. */
 nav > ul {
     display: flex;
-    flex-direction: row;
+    flex-direction: row-reverse;
 }
 
 nav ul {
@@ -46,24 +42,21 @@ nav > ul > li {
 
 nav button, nav a {
     display: block;
-    box-sizing: border-box; /* easier to make button and A the same size */
-    width: 100%;
-    height: 40px;
-    padding: 0px;
-    padding-bottom: 5px;
-    background-color: var(--color-header); /* was #3498db */
-    border: 2px solid black;
+    border: 2px solid #c9c9c9;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 110%;
     /* Firefox uses font -apple-system unless I repeat the font spec here. */
-    font-family: var(--font-family);
-    font-weight: bold;
-    font-size: 1.4rem;
+}
+
+nav {
+    text-align: right;
 }
 
 /* Only the top-level buttons are centered; lower ones are left-aligned. */
 nav > ul > li > button , nav > ul > li > a {
     text-align: center;
+    color: #084484;
 }
 
 /* because of the margin trick, this can only be used for the last element */
@@ -72,7 +65,89 @@ nav li.right {
     margin-left: auto;
 }
 
-nav button:hover, button:focus, nav a:hover, nav a:focus {
-    background-color: var(--color-focus);
+.col {
+    border-radius: 20px;
 }
 
+.matches .col {
+    text-align: center;
+    margin: 3%;
+    padding: 10%;
+    background-color: #c9c9c9;
+}
+
+.courses .col {
+    text-align: center;
+    margin: 1%;
+    padding: 3%;
+    background-color: #c9c9c9;
+}
+
+button:hover, button:focus, nav a:hover, nav a:focus {
+    text-decoration: none;
+    color: #c9c9c9;
+    background-color: #084484;
+}
+
+button {
+    border-radius: 10px;
+    background-color: #c9c9c9;
+    border: none;
+}
+
+.inline_button {
+    float: right;
+    margin-left: 2%;
+    height: 70%;
+    margin-top: 0.7%;
+}
+
+.bottom_button {
+    position: fixed;
+    right: 3%;
+    padding: 0.2%;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 10px;
+  }
+  
+tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+
+figure {
+    width: 100%;
+    text-align: center;
+    margin: 3%;
+    padding: 10%;
+  }
+
+img {
+    width: 60%;
+    text-align: center;
+    margin: 3%;
+    padding: 10%;
+}
+
+figcaption {
+    text-align: center;
+    color: #084484;
+    font-size: 120%;
+  }
+
+.signup_header, .signup_sub {
+    text-align: center;
+}
+
+.signup_header {
+    margin-top: 10%;
+    font-size: 300%;
+}
