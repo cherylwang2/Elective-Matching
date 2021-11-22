@@ -23,12 +23,12 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
 @app.route('/')
 def index():
-    return render_template('main.html',title='Hello')
+    return render_template('dashboard.html',title='Hello')
 
 @app.route('/greet/', methods=["GET", "POST"])
 def greet():
     if request.method == 'GET':
-        return render_template('greet.html', title='Customized Greeting')
+        return render_template('signup.html', title='Customized Greeting')
     else:
         try:
             username = request.form['username'] # throws error if there's trouble
