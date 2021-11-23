@@ -23,11 +23,11 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
 @app.route('/')
 def index():
-    return render_template('signup.html',title='Hello')
+    return render_template('signup.html',title='Welcome!')
 
 @app.route('/view/')
 def view():
-    pass
+    return pass
     #classlist = courses.getallcourses()
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
     #return render_template('view.html', classes = classlist)
@@ -40,14 +40,18 @@ def dashboard():
         else:
             try:
                 #the form will have their top 5 courses 
-                #request.form etc etc etc
+                #request.form etc etc etc (see next 2 comments for Q about this)
+                #dashboard assumes returning user, as in they've already ranked their top 5 -->
+                #so we should pull the info for top 5 out of the DATABASE, not the form
                 return render_template('dashboard.html', class1=, class2=, etc.)
             except:
                 flash('invalid entry: please enter 5 courses')
+                #i think all of us have different ideas of where/when exactly the user
+                #would enter their 5 courses; lets decide on 1 concrete vision before implementing this route
                 return render_template('dashboard.html')
     if user['status'] == 'PROFESSOR':
         if request.method == 'GET':
-            return render_template('prof_courseDetail.html')
+            return render_template('prof_dashboard.html')
         #add a course/edit an existing course
         #will it ever be POST for professors?
     else:
@@ -58,8 +62,24 @@ def dashboard():
     pass
     #courseInfo = courses.getCourseInfo(courseid)
     #select course info
-    #return render_template('course.html', courseInfo=courseInfo)
+    #return render_template('prof_courseDetail.html', courseInfo=courseInfo)
 
+@app.route('/add/', methods = ['GET', 'POST'])
+def add():
+    if request.method == 'GET':
+        return render_template('prof_addCourseForm.html')
+    else:
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        try:
+            curs.execute('''insert into courses (courseid, name, capacity, waitlistCap)
+            values (%s, %s, %s, %s)''', [request.form[‘number’], request.form[‘title’], 
+                                        int(request.form[‘capacity’]), 
+                                        int(request.form[‘waitlistCap’]])
+            conn.commit()
+            return redirect(url_for('dashboard'))
+        except: 
+            return redirect(url_for('dashboard'))
 
 @app.before_first_request
 def init_db():
