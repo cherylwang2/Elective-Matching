@@ -18,7 +18,7 @@
         <div class="row">
           <div class="col">
               <figure>
-                <a href="dashboard.html">
+                <a href="{{url_for('dashboard', status='STUDENT')}}">
                   <img src="../static/students.png">
                 </a>
                 <figcaption><em>I am a Student</em></figcaption>
@@ -26,7 +26,7 @@
           </div>
           <div class="col">
             <figure>
-              <a href="prof_dashboard.html">
+              <a href="{{url_for('dashboard', status='PROFESSOR')}}">
                 <img src="../static/professors.png">
               </a>
                 <figcaption><em>I am a Professor</em></figcaption>

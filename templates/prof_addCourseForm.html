@@ -4,43 +4,33 @@
 <nav class="navbar navbar-expand-lg">
   <ul class="navbar-nav ml-auto">
     <li class="nav-item nav-link"><a href="{{url_for('index')}}">HOME</a></li>
-    <li class="nav-item nav-link"><a href="{{url_for('testform')}}">BROWSER</a></li>
+    <!-- this next one is temporary, have yet to implement browser -->
+    <li class="nav-item nav-link"><a href="{{url_for('dashboard')}}">BROWSER</a></li>
   </ul>
 </nav>
 {% endblock %}
 
 {% block main_content %}
-<div class="row">
-<h1>Course Title Here</h1><br>
-<button class="inline_button" type="button">Edit Course</button>
-<button class="inline_button" type="button">Upload Materials</button>
-</div>
+<h1>Create a New Course Entry</h1><br>
 
-<form>
-  <div class="form-group">
-    <label for="number">Enter the course number (ex 304):</label>
-    <input type="text" class="form-control" id="number">
-  </div>
-  <div class="form-group">
-    <label for="title">Enter the course title:</label>
-    <input type="text" class="form-control" id="title">
-  </div>
-  <div class="form-group">
-    <label for="capacity">Enter the course capacity:</label>
-    <input type="text" class="form-control" id="capacity">
-  </div>
-  <div class="form-group">
-    <label for="waitlistCap">Enter the course waitlist capacity:</label>
-    <input type="text" class="form-control" id="waitlistCap">
-  </div>
-  <div class="form-group">
-    <label for="number">Enter the course number (ex 304):</label>
-    <input type="text" class="form-control" id="number">
-  </div>
-  <div class="form-group">
-    <label for="description">Enter a brief course description:</label>
-    <input type="textarea" class="form-control" id="description">
-  </div>
+<form method=post action="{{ url_for('add') }}">
+  <fieldset>
+    <table>
+    <tr><td><label for="number"> Enter the course number (ex 304):</label></td>
+        <td><input id="number" type="text" name="number"></td></tr>
+    <tr><td><label for="title">Enter the course title:</label></td>
+        <td><input id="title" type="text" name="title"></td></tr>
+    <tr><td><label for="capacity">Enter the course capacity:</label></td>
+        <td><input id="capacity" type="text" name="capacity"></td></tr>
+    <tr><td><label for="waitlistCap">Enter the waitlist capacity:</label></td>
+        <td><input id="waitlistCap" type="text" name="waitlistCap"></td></tr>
+    <tr><td><label for="description">Enter a brief course description:</label></td>
+        <td><input id="description" type="text" name="description"></td></tr>
+    </table>
+    </fieldset>
+
+    <p> <input type='submit' value='Add Course'> </p>
+
 </form>
 
 {% endblock %}
