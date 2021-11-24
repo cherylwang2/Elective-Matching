@@ -8,6 +8,7 @@ app = Flask(__name__)
 
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
+import course
 
 import random
 
@@ -35,22 +36,27 @@ def view():
 @app.route('/dashboard/', methods=["GET", "POST"])
 def dashboard(status):
     if status == 'STUDENT':
+
         return render_template('dashboard.html')
         if request.method == 'GET':
             return render_template('dashboard.html')
-        else:
-            try:
-                #the form will have their top 5 courses 
-                #request.form etc etc etc (see next 2 comments for Q about this)
-                #dashboard assumes returning user, as in they've already ranked their top 5 -->
-                #so we should pull the info for top 5 out of the DATABASE, not the form
-                return render_template('dashboard.html', #class1=, class2=, etc.
-                )
-            except:
-                flash('invalid entry: please enter 5 courses')
-                #i think all of us have different ideas of where/when exactly the user
-                #would enter their 5 courses; lets decide on 1 concrete vision before implementing this route
-                return render_template('dashboard.html')
+        try:
+            #the form will have their top 5 courses 
+            #request.form etc etc etc (see next 2 comments for Q about this)
+            #dashboard assumes returning user, as in they've already ranked their top 5 -->
+            #so we should pull the info for top 5 out of the DATABASE, not the form
+            class1 = request.form.get('class1')
+            class2 = request.form.get('class2')
+            class3 = request.form.get('class3')
+            class4 = request.form.get('class4')
+            class5 = request.form.get('class5')
+            return render_template('dashboard.html', class1=class1, class2=class2, class3=class3, class4=class4, class5=class5)
+            )
+        except:
+            flash('invalid entry: please enter all 5 courses')
+            #i think all of us have different ideas of where/when exactly the user
+            #would enter their 5 courses; lets decide on 1 concrete vision before implementing this route
+            return render_template('dashboard.html')
     if status == 'PROFESSOR':
         return render_template('prof_dashboard.html')
         if request.method == 'GET':
@@ -86,7 +92,7 @@ def add():
             conn.commit()
             return render_template('prof_addCourseForm.html')
         except:
-            flash('Oh no! That course already exists. Enter a different one:')
+            flash('Oh no! That course already exists. Enter a different one:') #TODO: change error message
             return render_template('prof_addCourseForm.html')
 
 @app.before_first_request
