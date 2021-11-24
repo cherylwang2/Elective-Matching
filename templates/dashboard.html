@@ -19,25 +19,33 @@
   </div>
 
 <h3>Your Top 5 Courses:</h3>
-<div class="container">
-    <div class="courses row">
-      <div class="col">
-        COURSE 1
-      </div>
-      <div class="col">
-        COURSE 2
-      </div>
-      <div class="col">
-        COURSE 3
-      </div>
-      <div class="col">
-        COURSE 4
-      </div>
-      <div class="col">
-        COURSE 5
-      </div>
-    </div>
-    <button class="bottom_button" type="button">Update Course Preferences</button>
-  </div>
+<form method="post" action="{{url_for('dashboard', class1 = class1, class2 = class2, class3 = class3, class4 = class4, class5 = class5)}}">
+  <fieldset>
+  <table>
+      <tr>
+        <td><label for="class1">{{class1}}</label></td>
+        <td><input id="class1" name="class1" value="{{class1}}"></td> 
+      </tr>
+      <tr>
+          <td><label for="class2">{{class2}}</label></td>
+          <td><input id="class2" name="class2" value="{{class2}}"></td>
+        </tr>
+        <tr>
+          <td><label for="class3">{{class3}}</label></td>
+          <td><input id="class3" name="class3" value={{class3}}></td>
+        </tr>
+        <tr>
+          <td><label for="class4">{{class}}</label></td>
+          <td><input id="class4" name="class4" value={{class4}}></td>
+        </tr>
+        <tr>
+          <td><label for="class5">{{class5}}</label></td>
+          <td><input id="class5" name="class5" value={{class5}}></td>
+        </tr>
+  </table>
+  </fieldset> 
+
+  <input type='submit' name='submit' value='update'>
+</form>
 
 {% endblock %}
