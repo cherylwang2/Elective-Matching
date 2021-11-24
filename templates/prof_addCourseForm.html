@@ -5,7 +5,7 @@
   <ul class="navbar-nav ml-auto">
     <li class="nav-item nav-link"><a href="{{url_for('index')}}">HOME</a></li>
     <!-- this next one is temporary, have yet to implement browser -->
-    <li class="nav-item nav-link"><a href="{{url_for('dashboard')}}">BROWSER</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='STUDENT')}}">BROWSER</a></li>
   </ul>
 </nav>
 {% endblock %}

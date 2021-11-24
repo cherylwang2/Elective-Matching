@@ -32,34 +32,37 @@ def view():
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
     #return render_template('view.html', classes = classlist)
 
-@app.route('/dashboard/', methods=["GET", "POST"])
+@app.route('/dashboard/<status>/', methods=["GET", "POST"])
 def dashboard(status):
-    if status == 'STUDENT':
-        return render_template('dashboard.html')
-        if request.method == 'GET':
-            return render_template('dashboard.html')
-        else:
-            try:
-                #the form will have their top 5 courses 
-                #request.form etc etc etc (see next 2 comments for Q about this)
-                #dashboard assumes returning user, as in they've already ranked their top 5 -->
-                #so we should pull the info for top 5 out of the DATABASE, not the form
-                return render_template('dashboard.html', #class1=, class2=, etc.
-                )
-            except:
-                flash('invalid entry: please enter 5 courses')
-                #i think all of us have different ideas of where/when exactly the user
-                #would enter their 5 courses; lets decide on 1 concrete vision before implementing this route
-                return render_template('dashboard.html')
-    if status == 'PROFESSOR':
-        return render_template('prof_dashboard.html')
-        if request.method == 'GET':
-            return render_template('prof_dashboard.html')
-        #add a course/edit an existing course
-        #will it ever be POST for professors?
+    if request.method == 'GET':
+        print(status)
+        if status == 'STUDENT':
+            return render_template('dashboard.html', status='STUDENT')
+        if status == 'PROFESSOR':
+            return render_template('prof_dashboard.html', status='PROFESSOR')
     else:
-        flash('Please log in!')
-        return redirect(url_for(index))
+        return
+    #     else:
+    #         try:
+    #             #the form will have their top 5 courses 
+    #             #request.form etc etc etc (see next 2 comments for Q about this)
+    #             #dashboard assumes returning user, as in they've already ranked their top 5 -->
+    #             #so we should pull the info for top 5 out of the DATABASE, not the form
+    #             return render_template('dashboard.html', #class1=, class2=, etc.
+    #             )
+    #         except:
+    #             flash('invalid entry: please enter 5 courses')
+    #             #i think all of us have different ideas of where/when exactly the user
+    #             #would enter their 5 courses; lets decide on 1 concrete vision before implementing this route
+    #             return render_template('dashboard.html')
+    # if status == 'PROFESSOR':
+    #     if request.method == 'GET':
+    #         return render_template('prof_dashboard.html')
+    #     #add a course/edit an existing course
+    #     #will it ever be POST for professors?
+    # else:
+    #     flash('Please log in!')
+    #     return redirect(url_for(index))
 
 @app.route('/course/<courseid>')
 def course():
