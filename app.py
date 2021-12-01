@@ -8,7 +8,8 @@ app = Flask(__name__)
 
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
-import course
+
+#import course
 
 import random
 
@@ -62,8 +63,7 @@ def dashboard(status):
     #     #add a course/edit an existing course
     #     #will it ever be POST for professors?
     # else:
-    #     flash('Please log in!')
-    #     return redirect(url_for(index))
+    #     return
 
 @app.route('/course/<courseid>')
 def course():
