@@ -12,6 +12,19 @@ body {
     font-style: italic;
 }
 
+#weight_exp {
+    font-style: italic;
+    font-weight: lighter;
+}
+
+.weight_display {
+    text-align: right;
+    align-content: right;
+}
+
+.rank {
+    text-align: center;
+}
 
 h1 {
     font-size: 200%;

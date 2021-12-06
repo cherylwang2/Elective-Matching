@@ -1,10 +1,10 @@
 use electivematching_db;
 
+drop table if exists assignments;
 drop table if exists teaches;
 drop table if exists chooses;
 drop table if exists courses;
 drop table if exists user;
-drop table if exists assignments;
 
 create table user (
 	uid varchar(15) not null,
@@ -53,6 +53,6 @@ create table assignments (
 	uid varchar(15) not null,
 	course varchar(6) not null,
 	foreign key (uid) references user(uid),
-	foreign key (uid) references courses(courseid)
+	foreign key (course) references courses(courseid)
 )
 Engine = InnoDB;

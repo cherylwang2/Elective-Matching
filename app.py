@@ -29,7 +29,11 @@ def index():
 
 @app.route('/view/')
 def view():
-    return
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from courses''')
+    rows = curs.fetchall()
+    return render_template('view_all.html', rows=rows)
     #classlist = courses.getallcourses()
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
     #return render_template('view.html', classes = classlist)
@@ -39,6 +43,8 @@ def dashboard(status):
     if request.method == 'GET':
         print(status)
         if status == 'STUDENT':
+            #query to fetch course assignments/match suggestions
+            #query to fetch top 5 courses from database
             return render_template('dashboard.html', status='STUDENT')
         if status == 'PROFESSOR':
             return render_template('prof_dashboard.html', status='PROFESSOR')
@@ -65,9 +71,30 @@ def dashboard(status):
     # else:
     #     return
 
+@app.route('/preferences/', methods=['GET', 'POST'])
+def preferences():
+    if request.method == 'GET':
+        conn = dbi.connect()
+        curs = dbi.dict_cursor(conn)
+        curs.execute('''select * from courses''')
+        rows = curs.fetchall()
+        return render_template('course_preferences.html', rows=rows)
+    else:
+        #insert query to input rank info into database
+        return redirect(url_for('dashboard', status='STUDENT'))
+
 @app.route('/course/<courseid>')
-def course():
-    return
+def course(courseid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from courses where courseid = %s''',[courseid])
+    courseInfo = curs.fetchone()
+    
+    curs.execute('''select * from user where uid in (select uid from assignments where course=%s)''',[courseid])
+    students = curs.fetchall()
+    #TODO: if student, render different detail page without buttons to edit
+    #if professor, render this
+    return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students)
     #courseInfo = courses.getCourseInfo(courseid)
     #select course info
     #return render_template('prof_courseDetail.html', courseInfo=courseInfo)

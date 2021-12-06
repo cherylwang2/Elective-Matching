@@ -2,60 +2,72 @@
 
 {% block main_content %}
 <h1>Choose your top 5 courses:</h1><br>
-
-<div class="container">
-  <form>
-    <div class="form-group">
-      <label for="course1">Choose your first course.</label>
-      <select class="form-control" id="course1">
-        <option>CS 304</option>
-        <option>CS 111</option>
-        <option>CS 242</option>
-        <option>CS 331</option>
-        <option>CS 204</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="course2">Choose your second course.</label>
-      <select class="form-control" id="course2">
-        <option>CS 304</option>
-        <option>CS 111</option>
-        <option>CS 242</option>
-        <option>CS 331</option>
-        <option>CS 204</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="course3">Choose your third course.</label>
-      <select class="form-control" id="course3">
-        <option>CS 304</option>
-        <option>CS 111</option>
-        <option>CS 242</option>
-        <option>CS 331</option>
-        <option>CS 204</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="course4">Choose your fourth course.</label>
-      <select class="form-control" id="course4">
-        <option>CS 304</option>
-        <option>CS 111</option>
-        <option>CS 242</option>
-        <option>CS 331</option>
-        <option>CS 204</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="course5">Choose your fifth course.</label>
-      <select class="form-control" id="course5">
-        <option>CS 304</option>
-        <option>CS 111</option>
-        <option>CS 242</option>
-        <option>CS 331</option>
-        <option>CS 204</option>
-      </select>
-    </div>
+  
+  <form method="post" action="{{url_for('preferences', status='STUDENT', class1=class1, class2=class2, class3=class3, class4=class4, class5=class5)}}">
+  <table>
+    <tr>
+      <th>Rank</th>
+      <th>Course Title</th>
+      <th>Weight<span id="weight_exp"> (distribute 500 points across your choices,
+        assigning points to indicate the weight of your preference for the course.)</span></th>
+    </tr>
+    <tr>
+      <td class="rank">1</td>
+      <td>
+        <select id="course1" name="course1">
+          <option value="none">Choose a course...</option>
+          {% for row in rows %}
+            <option value="{{row['courseid']}}">{{row['name']}}</option>
+          {% endfor %}
+        </select></td>
+      <td><input type="text" id="weight1" name="weight1" value="{{weight1}}"></td> 
+    </tr>
+    <tr>
+      <td class="rank">2</td>
+      <td>
+        <select id="course2" name="course2">
+          <option value="none">Choose a course...</option>
+          {% for row in rows %}
+            <option value="{{row['courseid']}}">{{row['name']}}</option>
+          {% endfor %}
+        </select></td>
+      <td><input type="text" id="weight2" name="weight2" value="{{weight2}}"></td> 
+    </tr>
+    <tr>
+      <td class="rank">3</td>
+      <td>
+        <select id="course3" name="course3">
+          <option value="none">Choose a course...</option>
+          {% for row in rows %}
+            <option value="{{row['courseid']}}">{{row['name']}}</option>
+          {% endfor %}
+        </select></td>
+      <td><input type="text" id="weight3" name="weight3" value="{{weight3}}"></td> 
+    </tr>
+    <tr>
+      <td class="rank">4</td>
+      <td>
+        <select id="course4" name="course4">
+          <option value="none">Choose a course...</option>
+          {% for row in rows %}
+            <option value="{{row['courseid']}}">{{row['name']}}</option>
+          {% endfor %}
+        </select></td>
+      <td><input type="text" id="weight4" name="weight4" value="{{weight4}}"></td> 
+    </tr>
+    <tr>
+      <td class="rank">5</td>
+      <td>
+        <select id="course5" name="course5">
+          <option value="none">Choose a course...</option>
+          {% for row in rows %}
+            <option value="{{row['courseid']}}">{{row['name']}}</option>
+          {% endfor %}
+        </select></td>
+      <td><input type="text" id="weight5" name="weight5" value="{{weight5}}"></td> 
+    </tr>
+  </table>
+  <input type='submit' name='submit' value='Calculate my matches!'>
   </form>
-  </div>
 
 {% endblock %}

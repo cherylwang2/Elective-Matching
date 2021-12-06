@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+<h1>All Available Courses:</h1><br>
+  
+<table>
+    <tr>
+      {% for row in rows %}
+      <td onClick="document.location.href='{{url_for('course', courseid=row['courseid'])}}';"><b>CS {{row['courseid']}} &ensp; {{row['name']}} &emsp;&emsp;&emsp;Composite Weight: {{row['weight']}}</b>
+        <br>Meeting Times: {{row['time']}}
+        <br>Capacity: {{row['capacity']}}  &emsp;Waitlist Capacity: {{row['waitlistCap']}}
+      </td></a>
+      {% endfor %}
+    </tr>
+  </table>
+
+{% endblock %}

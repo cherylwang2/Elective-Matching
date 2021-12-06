@@ -4,19 +4,20 @@
 <nav class="navbar navbar-expand-lg">
   <ul class="navbar-nav ml-auto">
     <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='PROFESSOR')}}">HOME</a></li>
-    <li class="nav-item nav-link"><a href="#">BROWSER</a></li>
     <li class="nav-item nav-link"><a href="{{url_for('add')}}">ADD A COURSE</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('view')}}">VIEW ALL COURSES</a></li>
   </ul>
 </nav>
 {% endblock %}
 
 {% block main_content %}
 <div class="row">
-<h1>Course Title Here</h1><br>
+<h1>{{courseInfo['name']}}</h1><br>
 <button class="inline_button" type="button">Edit Course</button>
 <button class="inline_button" type="button">Upload Materials</button>
 </div>
 
+<!-- leaving this here for now because we don't have descriptions in database yet... -->
 <p>Course Description Here. This is an example one from CS 304: A study 
   of the three-layer architecture commonly used for Web-based applications 
   such as e-commerce sites. We will learn to model and design databases using
@@ -29,46 +30,11 @@
 <h4>Students Matched to the Course:</h4>
 <div class="container students">
   <table>
+    {% for student in students %}
     <tr>
-      <th>Student Name</th>
+      <th>{{student['name']}}</th>
     </tr>
-    <tr>
-      <th>Student Name</th>
-    </tr>
-    <tr>
-      <th>Student Name</th>
-    </tr>
-    <tr>
-      <th>Student Name</th>
-    </tr>
-    <tr>
-      <th>Student Name</th>
-    </tr>
-    <tr>
-      <th>Student Name</th>
-    </tr>
-    <tr>
-      <th>Student Name</th>
-    </tr>
-  </table>
-  </div>
-  <br>
-
-<h4>Students Currently Registered:</h4>
-<div class="container students">
-    <table>
-      <tr>
-        <th>Student Name</th>
-      </tr>
-      <tr>
-        <th>Student Name</th>
-      </tr>
-      <tr>
-        <th>Student Name</th>
-      </tr>
-      <tr>
-        <th>Student Name</th>
-      </tr>
+    {% endfor %}
     </table>
   </div>
 
