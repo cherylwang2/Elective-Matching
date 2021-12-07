@@ -9,7 +9,7 @@ app = Flask(__name__)
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
 
-#import course
+import course
 
 import random
 
@@ -30,9 +30,7 @@ def index():
 @app.route('/view/')
 def view():
     conn = dbi.connect()
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''select * from courses''')
-    rows = curs.fetchall()
+    rows = course.viewCourses(conn)
     return render_template('view_all.html', rows=rows)
     #classlist = courses.getallcourses()
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
@@ -75,9 +73,7 @@ def dashboard(status):
 def preferences():
     if request.method == 'GET':
         conn = dbi.connect()
-        curs = dbi.dict_cursor(conn)
-        curs.execute('''select * from courses''')
-        rows = curs.fetchall()
+        rows = course.viewCourses(conn)
         return render_template('course_preferences.html', rows=rows)
     else:
         #insert query to input rank info into database
@@ -86,12 +82,9 @@ def preferences():
 @app.route('/course/<courseid>')
 def course(courseid):
     conn = dbi.connect()
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''select * from courses where courseid = %s''',[courseid])
-    courseInfo = curs.fetchone()
+    courseInfo = course.chooseCourse(conn, courseid)
     
-    curs.execute('''select * from user where uid in (select uid from assignments where course=%s)''',[courseid])
-    students = curs.fetchall()
+    students = course.getStudents(conn, courseid)
     #TODO: if student, render different detail page without buttons to edit
     #if professor, render this
     return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students)
@@ -106,15 +99,13 @@ def add():
     else:
         try:
             conn = dbi.connect()
-            curs = dbi.dict_cursor(conn)
-            print(curs)
-            print(request.form['number'])
-            curs.execute('''insert into courses (courseid, name, capacity, waitlistCap)
-                            values (%s, %s, %s, %s)''', [request.form['number'], 
-                                                        request.form['title'], 
-                                                        int(request.form['capacity']), 
-                                                        int(request.form['waitlistCap'])])
-            conn.commit()
+            number = request.form['number']
+            title = request.form['title']
+            capacity = int(request.form['capacity'])
+            waitlistCap = int(request.form['waitlistCap'])
+            print(number)
+            course.insertCourse(conn, number, title, capacity, waitlistCap)
+            
             return render_template('prof_addCourseForm.html')
         except:
             flash('Oh no! That course already exists. Enter a different one:') #TODO: change error message
