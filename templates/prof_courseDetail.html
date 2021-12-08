@@ -14,7 +14,10 @@
 <div class="row">
 <h1>{{courseInfo['name']}}</h1><br>
 <button class="inline_button" type="button">Edit Course</button>
-<button class="inline_button" type="button">Upload Materials</button>
+<form method="post" action="" enctype="multipart/form-data">
+  <button><label>Choose course materials<input type="file" name="courseFile" style="display:none"></label></button>
+  <input type="submit" value="Upload" class="submit_button">
+</form>
 </div>
 
 <!-- leaving this here for now because we don't have descriptions in database yet... -->

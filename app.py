@@ -23,6 +23,10 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
+#file upload
+app.config['UPLOADS'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 1*1024*1024
+
 @app.route('/')
 def index():
     return render_template('signup.html',title='Welcome!')
@@ -30,7 +34,10 @@ def index():
 @app.route('/view/')
 def view():
     conn = dbi.connect()
-    rows = course.viewCourses(conn)
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from courses''')
+    rows = curs.fetchall()
+    #rows = course.viewCourses(conn) --> was not working for me? throwing error
     return render_template('view_all.html', rows=rows)
     #classlist = courses.getallcourses()
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
@@ -73,24 +80,36 @@ def dashboard(status):
 def preferences():
     if request.method == 'GET':
         conn = dbi.connect()
-        rows = course.viewCourses(conn)
+        curs = dbi.dict_cursor(conn)
+        curs.execute('''select * from courses''')
+        rows = curs.fetchall()
+        #rows = course.viewCourses(conn) --> same issue as above
         return render_template('course_preferences.html', rows=rows)
     else:
         #insert query to input rank info into database
         return redirect(url_for('dashboard', status='STUDENT'))
 
-@app.route('/course/<courseid>')
+@app.route('/course/<courseid>', methods=['GET', 'POST'])
 def course(courseid):
     conn = dbi.connect()
-    courseInfo = course.chooseCourse(conn, courseid)
-    
-    students = course.getStudents(conn, courseid)
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from courses where courseid = %s''',[courseid])
+    courseInfo = curs.fetchone()
+
+    curs.execute('''select * from user where uid in (select uid from assignments where course=%s)''',[courseid])
+    students = curs.fetchall()
+    #courseInfo = course.chooseCourse(conn, courseid) --> same
+    #students = course.getStudents(conn, courseid) --> same
+
     #TODO: if student, render different detail page without buttons to edit
     #if professor, render this
     return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students)
     #courseInfo = courses.getCourseInfo(courseid)
     #select course info
     #return render_template('prof_courseDetail.html', courseInfo=courseInfo)
+
+#HARDCODING GLOBAL UID VARIABLE FOR TESTING PURPOSES, IGNORE WHEN WE IMPLEMENT LOGINS + SESSIONS
+uid = 123
 
 @app.route('/add/', methods=['GET', 'POST'])
 def add():
@@ -105,8 +124,21 @@ def add():
             waitlistCap = int(request.form['waitlistCap'])
             print(number)
             course.insertCourse(conn, number, title, capacity, waitlistCap)
-            
-            return render_template('prof_addCourseForm.html')
+
+            if request.form['courseFile']:
+                try:
+                    f = request.files['courseFile']
+                    user_filename = f.filename
+                    ext = user_filename.split('.')[-1]
+                    filename = secure_filename('{}.{}'.format(uid,ext))
+                    pathname = os.path.join(app.config['UPLOADS'],filename)
+                    f.save(pathname)
+                    conn = dbi.connect()
+                    curs = dbi.dict_cursor(conn)
+                    #curs.execute(query to insert file into the database)
+                except Exception as err:
+                    flash('Upload failed {why}'.format(why=err))
+            return render_template('prof_addCourseForm.html') #prob change this to the detail page of the course they just added
         except:
             flash('Oh no! That course already exists. Enter a different one:') #TODO: change error message
             return render_template('prof_addCourseForm.html')

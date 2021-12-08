@@ -108,6 +108,16 @@ button {
     border: none;
 }
 
+form > button {
+    height: 35%;
+    margin-top: 4%;
+    margin-left: 2%;
+}
+
+.submit_button {
+    margin-top: 2%;
+}
+
 .inline_button {
     float: right;
     margin-left: 2%;
