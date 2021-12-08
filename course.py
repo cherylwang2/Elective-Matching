@@ -6,19 +6,6 @@ def viewCourses(conn):
     rows = curs.fetchall()
     return rows
 
-def courseGivenProf(conn, name ):
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-        select * from teaches   
-        where name = %s%''', [name])
-    return curs.fetchall()
-
-def courseGivenProf(conn, name ):
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-        select * from teaches   
-        where name = %s%''', [name])
-    return curs.fetchall()
 
 def courseGivenProf(conn, name ):
     curs = dbi.dict_cursor(conn)
