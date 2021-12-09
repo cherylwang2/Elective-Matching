@@ -37,7 +37,7 @@ def view():
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses''')
     rows = curs.fetchall()
-    #rows = course.viewCourses(conn) --> was not working for me? throwing error
+    #rows = course.viewCourses(conn)
     return render_template('view_all.html', rows=rows)
     #classlist = courses.getallcourses()
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
@@ -89,8 +89,8 @@ def preferences():
         #insert query to input rank info into database
         return redirect(url_for('dashboard', status='STUDENT'))
 
-@app.route('/course/<courseid>', methods=['GET', 'POST'])
-def course(courseid):
+@app.route('/course/<status>/<courseid>/', methods=['GET', 'POST'])
+def course(status, courseid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses where courseid = %s''',[courseid])
@@ -103,7 +103,10 @@ def course(courseid):
 
     #TODO: if student, render different detail page without buttons to edit
     #if professor, render this
-    return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students)
+    if status == 'STUDENT':
+        return render_template('courseDetail.html', courseInfo=courseInfo, students=students)
+    elif status == 'PROFESSOR':
+        return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students)
     #courseInfo = courses.getCourseInfo(courseid)
     #select course info
     #return render_template('prof_courseDetail.html', courseInfo=courseInfo)
