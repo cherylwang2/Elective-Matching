@@ -4,8 +4,8 @@
 <nav class="navbar navbar-expand-lg">
   <ul class="navbar-nav ml-auto">
     <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='PROFESSOR')}}">HOME</a></li>
-    <li class="nav-item nav-link"><a href="#">BROWSER</a></li>
     <li class="nav-item nav-link"><a href="{{url_for('add')}}">ADD A COURSE</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('view')}}">VIEW ALL COURSES</a></li>
   </ul>
 </nav>
 {% endblock %}
@@ -13,7 +13,7 @@
 {% block main_content %}
 <h1>Create a New Course Entry</h1><br>
 
-<form method=post action="{{ url_for('add') }}">
+<form method=post action="{{ url_for('add') }}" enctype="multipart/form-data">
   <fieldset>
     <table>
     <tr><td><label for="number"> Enter the course number (ex 304):</label></td>
@@ -26,6 +26,8 @@
         <td><input id="waitlistCap" type="text" name="waitlistCap"></td></tr>
     <tr><td><label for="description">Enter a brief course description:</label></td>
         <td><input id="description" type="text" name="description"></td></tr>
+    <tr><td><label for="courseFile">Upload course materials:</label></td>
+        <td><input id="courseFile" type="file" name="courseFile"></td></tr>
     </table>
     </fieldset>
 

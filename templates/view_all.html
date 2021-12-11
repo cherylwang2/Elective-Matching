@@ -3,10 +3,11 @@
 {% block main_content %}
 <h1>All Available Courses:</h1><br>
   
+<!-- change status here to be dynamic once the sessions are up and running -->
 <table>
     <tr>
       {% for row in rows %}
-      <td onClick="document.location.href='{{url_for('course', courseid=row['courseid'])}}';"><b>CS {{row['courseid']}} &ensp; {{row['name']}} &emsp;&emsp;&emsp;Composite Weight: {{row['weight']}}</b>
+      <td onClick="document.location.href='{{url_for('course', courseid=row['courseid'], status='STUDENT')}}';"><b>CS {{row['courseid']}} &ensp; {{row['name']}} &emsp;&emsp;&emsp;Composite Weight: {{row['weight']}}</b>
         <br>Meeting Times: {{row['time']}}
         <br>Capacity: {{row['capacity']}}  &emsp;Waitlist Capacity: {{row['waitlistCap']}}
       </td></a>
