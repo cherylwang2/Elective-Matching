@@ -13,6 +13,17 @@ import course
 
 import random
 
+# new for CAS
+from flask_cas import CAS
+
+CAS(app)
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'logged_in'
+
 app.secret_key = 'your secret here'
 # replace that with a random key
 app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
@@ -31,13 +42,30 @@ app.config['MAX_CONTENT_LENGTH'] = 1*1024*1024
 def index():
     return render_template('signup.html',title='Welcome!')
 
+@app.route('/logged_in/')
+def logged_in():
+    if session['CAS_ATTRIBUTES']['cas:isStudent']:
+        print(session['CAS_ATTRIBUTES']['cas:givenName'])
+        return redirect(url_for('dashboard', status='STUDENT'))
+    elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
+        return redirect(url_for('dashboard', status='PROFESSOR'))
+
+    if 'CAS_USERNAME' in session:
+        is_logged_in = True
+        username = session['CAS_USERNAME']
+        print(('CAS_USERNAME is: ',username))
+    else:
+        is_logged_in = False
+        username = None
+        print('CAS_USERNAME is not in the session')
+
 @app.route('/view/')
 def view():
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses''')
     rows = curs.fetchall()
-    #rows = course.viewCourses(conn) --> was not working for me? throwing error
+    #rows = course.viewCourses(conn)
     return render_template('view_all.html', rows=rows)
     #classlist = courses.getallcourses()
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
@@ -50,9 +78,9 @@ def dashboard(status):
         if status == 'STUDENT':
             #query to fetch course assignments/match suggestions
             #query to fetch top 5 courses from database
-            return render_template('dashboard.html', status='STUDENT')
+            return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'])
         if status == 'PROFESSOR':
-            return render_template('prof_dashboard.html', status='PROFESSOR')
+            return render_template('prof_dashboard.html', status='PROFESSOR', name=session['CAS_ATTRIBUTES']['cas:givenName'])
     else:
         return
     #     else:
@@ -89,8 +117,8 @@ def preferences():
         #insert query to input rank info into database
         return redirect(url_for('dashboard', status='STUDENT'))
 
-@app.route('/course/<courseid>', methods=['GET', 'POST'])
-def course(courseid):
+@app.route('/course/<status>/<courseid>/', methods=['GET', 'POST'])
+def course(status, courseid):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses where courseid = %s''',[courseid])
@@ -103,7 +131,10 @@ def course(courseid):
 
     #TODO: if student, render different detail page without buttons to edit
     #if professor, render this
-    return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students)
+    if status == 'STUDENT':
+        return render_template('courseDetail.html', courseInfo=courseInfo, students=students)
+    elif status == 'PROFESSOR':
+        return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students)
     #courseInfo = courses.getCourseInfo(courseid)
     #select course info
     #return render_template('prof_courseDetail.html', courseInfo=courseInfo)
@@ -153,11 +184,13 @@ def init_db():
 
 if __name__ == '__main__':
     import sys, os
+
     if len(sys.argv) > 1:
-        # arg, if any, is the desired port number
-        port = int(sys.argv[1])
-        assert(port>1024)
+        port=int(sys.argv[1])
+        if not(1943 <= port <= 1952):
+            print('For CAS, choose a port from 1943 to 1952')
+            sys.exit()
     else:
-        port = os.getuid()
+        port=os.getuid()
     app.debug = True
     app.run('0.0.0.0',port)
