@@ -12,7 +12,7 @@ app = Flask(__name__)
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
 
-import course
+import algorithm
 
 import random
 
