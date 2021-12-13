@@ -16,6 +16,8 @@ import algorithm
 
 import random
 
+import course
+
 # new for CAS
 from flask_cas import CAS
 

@@ -3,7 +3,7 @@ from scipy.optimize import linprog
 import numpy as np
 
 #created from inner join chooses with courses on chooses.course = courses.courseid
-def create_Ineq(chooses, students, length): #make sure chooses sorts students by ASC
+def create_Ineq(chooses, students, length): #make sure chooses sorts students by ASC and rank by ASC
     #assumes each student chooses 5 classes
     '''chooses is curs object being returned, students is num students, length is length of array'''
     index = 0
@@ -43,6 +43,13 @@ def LP_det_avg(chooses, students, length):
     A_ineq = ineq[0]
     B_ineq = ineq[1]
     c = [0. for i in range(len(A_ineq))]
+    index = 0
+    for i in range(students):
+        x = 1
+        for j in range(5):
+            c[index] = x
+            x += 0.1
+            index += 1
     LPSolution = linprog(c, A_ub=A_ineq, b_ub=B_ineq, method='interior-point')
     LPSum = 0
     totalSeatsOffered = 0
@@ -67,3 +74,7 @@ def LP_det_avg(chooses, students, length):
     print("Total number of seats offered: ", totalSeatsOffered)
     print(" ")
     return solutionSet
+
+#def readSolutionSet(solSet, conn):
+#    curs = dbi.dict_cursor(conn)
+#    curs.execute('''insert )
