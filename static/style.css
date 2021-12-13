@@ -35,6 +35,9 @@ h2, h3, h4 {
     color: #084484;
 }
     
+.signup:hover, .signup{
+    background-color: white;
+}
 
 /* for a simple navbar. Talk to Scott if you want drop-downs. */
 nav > ul {

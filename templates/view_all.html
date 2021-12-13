@@ -5,7 +5,6 @@
   
 <!-- change status here to be dynamic once the sessions are up and running -->
 <table>
-    <tr>
       {% for row in rows %}
       <td onClick="document.location.href='{{url_for('course', courseid=row['courseid'], status='STUDENT')}}';"><b>CS {{row['courseid']}} &ensp; {{row['name']}} &emsp;&emsp;&emsp;Composite Weight: {{row['weight']}}</b>
         <br>Meeting Times: {{row['time']}}

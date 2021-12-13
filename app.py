@@ -1,6 +1,9 @@
+import os
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
 from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = 'uploads'
 app = Flask(__name__)
 
 # one or the other of these. Defaults to MySQL (PyMySQL)
@@ -38,14 +41,21 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 app.config['UPLOADS'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 1*1024*1024
 
+def set_status_student():
+    session['user_status'] = 'student'
+
 @app.route('/')
 def index():
     return render_template('signup.html',title='Welcome!')
 
 @app.route('/logged_in/')
 def logged_in():
+    uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''insert into user (uid, name) values (%s, %s) on duplicate key update uid=uid''', [uid, session['CAS_ATTRIBUTES']['cas:givenName']])
+    conn.commit()
     if session['CAS_ATTRIBUTES']['cas:isStudent']:
-        print(session['CAS_ATTRIBUTES']['cas:givenName'])
         return redirect(url_for('dashboard', status='STUDENT'))
     elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
         return redirect(url_for('dashboard', status='PROFESSOR'))
@@ -73,48 +83,56 @@ def view():
 
 @app.route('/dashboard/<status>/', methods=["GET", "POST"])
 def dashboard(status):
+    uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
     if request.method == 'GET':
         print(status)
         if status == 'STUDENT':
             #query to fetch course assignments/match suggestions
             #query to fetch top 5 courses from database
-            return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'])
+            curs.execute('''select course, courseRank from chooses where student=%s''', [uid])
+            choices = curs.fetchall()
+            print(choices)
+            #STOPPED HERE - AFTER THIS, ADD ENOUGH TEST DATA FOR 5 COURSES
+            #USE INFO FROM CURSOR TO RENDER DASHBOARD COMPLETELY
+            return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'], 
+                                    course1 = choices[0]['course'], course2 = choices[1]['course'], course3=choices[2]['course'], 
+                                    course4=choices[3]['course'], course5=choices[4]['course'])
         if status == 'PROFESSOR':
             return render_template('prof_dashboard.html', status='PROFESSOR', name=session['CAS_ATTRIBUTES']['cas:givenName'])
     else:
         return
-    #     else:
-    #         try:
-    #             #the form will have their top 5 courses 
-    #             #request.form etc etc etc (see next 2 comments for Q about this)
-    #             #dashboard assumes returning user, as in they've already ranked their top 5 -->
-    #             #so we should pull the info for top 5 out of the DATABASE, not the form
-    #             return render_template('dashboard.html', #class1=, class2=, etc.
-    #             )
-    #         except:
-    #             flash('invalid entry: please enter 5 courses')
-    #             #i think all of us have different ideas of where/when exactly the user
-    #             #would enter their 5 courses; lets decide on 1 concrete vision before implementing this route
-    #             return render_template('dashboard.html')
-    # if status == 'PROFESSOR':
-    #     if request.method == 'GET':
-    #         return render_template('prof_dashboard.html')
-    #     #add a course/edit an existing course
-    #     #will it ever be POST for professors?
-    # else:
-    #     return
+        #no post for dashboard, right? now that we've separated out preferences?
 
 @app.route('/preferences/', methods=['GET', 'POST'])
 def preferences():
+    uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
     if request.method == 'GET':
-        conn = dbi.connect()
-        curs = dbi.dict_cursor(conn)
         curs.execute('''select * from courses''')
         rows = curs.fetchall()
         #rows = course.viewCourses(conn) --> same issue as above
         return render_template('course_preferences.html', rows=rows)
     else:
         #insert query to input rank info into database
+        curs.execute('''insert into chooses (course, courseRank, courseWeight, student)
+                        values (%s, %s, %s, %s)''', 
+                        [int(request.form['course1']), 1, int(request.form['weight1']), uid])
+        curs.execute('''insert into chooses (course, courseRank, courseWeight, student)
+                        values (%s, %s, %s, %s)''', 
+                        [int(request.form['course2']), 2, int(request.form['weight2']), uid])
+        curs.execute('''insert into chooses (course, courseRank, courseWeight, student)
+                        values (%s, %s, %s, %s)''', 
+                        [int(request.form['course3']), 3, int(request.form['weight3']), uid])
+        curs.execute('''insert into chooses (course, courseRank, courseWeight, student)
+                        values (%s, %s, %s, %s)''', 
+                        [int(request.form['course4']), 4, int(request.form['weight4']), uid])
+        curs.execute('''insert into chooses (course, courseRank, courseWeight, student)
+                        values (%s, %s, %s, %s)''', 
+                        [int(request.form['course5']), 5, int(request.form['weight5']), uid])
+        conn.commit()
         return redirect(url_for('dashboard', status='STUDENT'))
 
 @app.route('/course/<status>/<courseid>/', methods=['GET', 'POST'])

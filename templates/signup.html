@@ -14,27 +14,31 @@
     <h1 class="signup_header">Welcome to Elective Matching!</h1>
     <h4 class="signup_sub">Let's get you started.</h4>
 
-    <form method="GET" action="{{url_for('cas.login')}}">
-      <button>login</button>
-    </form>
-
     <div class="container">
         <div class="row">
           <div class="col">
+            <form method="GET" action="{{url_for('cas.login')}}">
+              <button class="signup">
               <figure>
                 <a href="{{url_for('dashboard', status='STUDENT')}}">
                   <img src="../static/students.png">
                 </a>
                 <figcaption><em>I am a Student</em></figcaption>
             </figure>
+            </button>
+            </form>
           </div>
           <div class="col">
-            <figure>
-              <a href="{{url_for('dashboard', status='PROFESSOR')}}">
-                <img src="../static/professors.png">
-              </a>
+            <form method="GET" action="{{url_for('cas.login')}}">
+              <button class="signup">
+              <figure>
+                <a href="{{url_for('dashboard', status='PROFESSOR')}}">
+                  <img src="../static/professors.png">
+                </a>
                 <figcaption><em>I am a Professor</em></figcaption>
             </figure>
+            </button>
+            </form>
           </div>
           </div>
           </div>
