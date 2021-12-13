@@ -22,8 +22,8 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 def page():
     return render_template("cloud.html")
 
-@app.route('/join/', methods = ["POST"])
-def join():
+@app.route('/signUp/', methods = ["POST"])
+def signUp():
     conn = dbi.connect()
 
     # get user input
@@ -35,16 +35,15 @@ def join():
     stored = hashed.decode('utf-8')
 
     try: # insert new username and password
-        sql = '''INSERT INTO loginInfo (username, password) 
-        VALUES (%s, %s)'''
+        sql = '''INSERT INTO user (uid) 
+        VALUES (%s)'''
         curs = dbi.dict_cursor(conn)
-        curs.execute(sql,[newUsername, hashed])
+        curs.execute(sql,[newUsername])
         conn.commit()
-        return jsonify({'error': False, 'uid': newUsername})
+        return # redirect to dashboard for status S or P 
     except Exception as err: # error if username already exists
         msg = 'Sorry! That username is taken'
-        return jsonify({'error': True, 'errmsg': msg})
-
+        return # render template again  
     
 @app.route('/login/', methods = ["POST"])
 def login():
@@ -54,9 +53,9 @@ def login():
     Username = request.form["username"]
     Password = request.form["password"]
     curs = dbi.dict_cursor(conn)
-    sql = '''select username, password
-        from loginInfo
-        where username = %s 
+    sql = '''select uid,
+        from user
+        where uid = %s 
         '''
     curs.execute(sql,[Username])
     sql = curs.fetchone()
@@ -64,21 +63,22 @@ def login():
     # check if username exists
     if sql is None:
         msg = "Sorry; that username does not exist"
-        return jsonify({'error': True, 'errmsg': msg})
-
+        return #render to sign up or change log in info
     # check if password matches using hashed and bcrypt  
     stored = sql['password']
     hashed2 = bcrypt.hashpw(Password.encode('utf-8'), stored.encode('utf-8'))
     hashed2_str = hashed2.decode('utf-8')
     if hashed2_str == stored:
         print("the passwords match")
-        session['username'] = Username
+        #session['username'] = Username
         session['uid'] = sql['username']
-        return jsonify({'error': False})
+        return # redirect to dashboard acc to the users dashboard ( S or P)
     else:
         msg = "Sorry; that Password does not match the exsiting one in our system"
-        return jsonify({'error': True, 'errmsg': msg})
+        return #render to change log in info
 
+
+""" 
 @app.route('/<username>/<key>', methods = ['GET','PUT','DELETE'])
 def user_key(username = None, key = None):
     conn = dbi.connect()
@@ -114,6 +114,7 @@ def user_key(username = None, key = None):
         return jsonify({'error': False})
 
     return render_template("cloud.html")
+ """
 
 @app.before_first_request
 def init_db():

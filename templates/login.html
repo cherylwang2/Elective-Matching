@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8'>
+    <meta name=author content="Scott Anderson">
+    <title>About Cloud DB</title>
+    <style>
+        #password_form {
+            width: fit-content;
+        }
+        #password_form  label {
+            display: block;
+            text-align: right;
+        }
+    </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cs.wellesley.edu/~anderson/js/bounds/bounds-plugin.js"></script>
+<script>
+    var url_to_join = "{{url_for('join')}}"; 
+    var url_to_login = "{{url_for('login')}}"; 
+    // this is incomplete. Need to append user and slash and key
+    var url_base = "{{url_for('user_key', username= '', key='')}}";
+    var user = null;
+
+    function do_join(username, password) {
+        $.post(url_to_join,
+               {username: username, password: password},
+               function (resp) {
+                   if (resp.error) {
+                       alert(resp.errmsg)
+                   } else {
+                       alert('join successful');
+                       user = username;
+                   }
+               });
+    }
+
+    function do_login(username, password) {
+        $.post(url_to_login,
+               {username: username, password: password},
+               function (resp) {
+                   if (resp.error) {
+                       alert(resp.errmsg)
+                   } else {
+                       alert('login successful');
+                       user = username;
+                   }
+               });
+    }
+
+    // suitable for JS console
+    function join(username) {
+        let password = prompt('what password?');
+        do_join(username, password);
+    }
+
+    function login(username) {
+        let password = prompt('what password?');
+        do_login(username, password);
+    }
+
+// ================================================================
+// Save to the cloud
+// CS 304 students can use these to test their Ajax REST backend routes.
+
+    function getItem(key, callback) {
+        if(!callback) callback = console.log;
+        if( user == null ) {
+            alert('must login');
+            return;
+        }
+        $.get(url_base+user+'/'+key, callback);
+    }
+        
+    function setItem(key, value, callback) {
+        if(!callback) callback = console.log;
+        if( user == null ) {
+            alert('must login');
+            return;
+        }
+        $.ajax(url_base+user+'/'+key,
+               {method: 'PUT',
+                success: callback,
+                data: {'value': value}});
+    }
+
+    function deleteItem(key, callback) {
+        if(!callback) callback = console.log;
+        if( user == null ) {
+            alert('must login');
+            return;
+        }
+        $.ajax(url_base+user+'/'+key,
+               {method: 'DELETE',
+                success: callback});
+    }
+
+    // Console.log prints *all* its arguments; this just has one.
+    function print(x) {
+        console.log(x);
+    }
+
+    // ================================================================
+    // set up event handlers for the three forms
+    
+    $(function () {
+        $("#join_button").one().click(function () {
+            let username = $("#join_form [name=username]").val();
+            let password = $("#join_form [name=password]").val();
+            do_join(username, password);
+            $("#join_form")[0].reset();
+        });
+        $("#login_button").one().click(function () {
+            let username = $("#login_form [name=username]").val();
+            let password = $("#login_form [name=password]").val();
+            do_login(username, password);
+            $("#login_form")[0].reset();
+        });
+    });
+
+</script>
+
+</head>
+<body>
+    
+    <h1>Cloud Key/Value Store</h1>
+
+    <h2>Join</h2>
+    <form id="join_form" method="post" action="{{url_for('join')}}">
+        <label>username <input type="text" name="username"></label>
+        <label>password <input type="text" name="password"></label>
+        <input id="join_button" type="button" value="join">
+    </form>
+
+    <h2>Login</h2>
+
+    <form id="login_form" method="post" action="{{url_for('login')}}">
+        <label>username <input type="text" name="username"></label>
+        <label>password <input type="text" name="password"></label>
+        <input id="login_button" type="button" value="login">
+    </form>
+        
+        
+    <h2>API</h2>
+
+    <p>Use these basic URLs</p>
+
+    <pre>
+        var url_to_join = "{{url_for('join')}}"; 
+        var url_to_login = "{{url_for('login')}}"; 
+        var url_to_use = "/&lt;username&gt;/&lt;key&gt;";
+    </pre>
+
+    <h2>JavaScript Functions</h2>
+
+    <pre>
+        join(username);
+        login(username);
+        getItem(key, callback);
+        setItem(key, value, callback);
+        deleteItem(key, callback);
+    </pre>
+
+    <p>If omitted, all the callbacks default to <code>console.log</code>.
+
+</body>
+</html>
