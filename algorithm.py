@@ -36,13 +36,34 @@ def create_Ineq(chooses, students, length): #make sure chooses sorts students by
             temp = i
         A_ineq.append(emptyList)
         B_ineq.append(chooses[i]['capacity'])
-    #print(A_ineq)
-    #print(B_ineq)
-    lenA = len(A_ineq)
-    ineq = [lenA]
-    ineq += A_ineq
-    ineq += B_ineq
-    return ineq
+    return [A_ineq, B_ineq]
 
-#A_ineq = [1:ineq[0]]
-#B_ineq = [ineq[0]:]
+def LP_det_avg(chooses, students, length):
+    ineq = create_Ineq(chooses, students, length)
+    A_ineq = ineq[0]
+    B_ineq = ineq[1]
+    c = [0. for i in range(len(A_ineq))]
+    LPSolution = linprog(c, A_ub=A_ineq, b_ub=B_ineq, method='interior-point')
+    LPSum = 0
+    totalSeatsOffered = 0
+    solutionSet = []
+    for value in LPSolution['x']: 
+        LPSum += value
+    LP_avg = LPSum/len(LPSolution['x'])
+    counter = 0
+    for value in LPSolution['x']:
+        if value >= LP_avg:
+            value = 1  
+            totalSeatsOffered += 1          
+        if value < LP_avg:
+            value = 0
+        decision = [chooses[counter]['student'], chooses[counter]['course'], value]
+        solutionSet.append(decision)
+        counter += 1
+    print("RESULTS FOR DETERMINISTIC ROUNDING (Threshold = Average LP Value): ")
+    print("Solution set format: [student, course, assignment status]")
+    print("Solution set: ", solutionSet)
+    #print("LPSum: ", LPSum)
+    print("Total number of seats offered: ", totalSeatsOffered)
+    print(" ")
+    return solutionSet
