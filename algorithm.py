@@ -25,10 +25,10 @@ def create_Ineq(chooses, students, length): #make sure chooses sorts students by
     for j in range(students): #this appends the courses for each student
         emptyList = [0 for i in range(length)]
         for k in range(5):
-            emptyList[index2] = 1
+            emptyList[index2] = -1
             index2 += 1
         A_ineq.append(emptyList)
-        B_ineq.append(1)
+        B_ineq.append(-1)
     for k in indexDict:
         emptyList = [0 for i in range(length)]
         for i in indexDict[k]:
