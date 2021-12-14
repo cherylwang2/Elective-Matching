@@ -13,10 +13,7 @@ import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
 
 import algorithm
-
 import random
-
-import course
 
 # new for CAS
 
@@ -121,16 +118,22 @@ def preferences():
     else:
         #insert query to input rank info into database
         yearDict = {'2022':500, '2023':400, '2024':300, '2025':200} #update each year
-        tokens = int(curs.execute('''select classYear from user where uid = %s''', [uid])['classYear'])
-        tokens = yearDict[tokens]
+        curs.execute('''select classYear from user where uid = %s''', [uid])
+        tokens = yearDict[curs.fetchone(['classYear'])]
         course1= int(request.form['course1'])
         course2= int(request.form['course2'])
         course3= int(request.form['course3'])
         course4= int(request.form['course4'])
         course5= int(request.form['course5'])
-        inOrder = course.inDescOrder([course1,course2,course3,course4,course5])
+        courses = [course1,course2,course3,course4,course5]
+        for i in range(5):
+            if courses[i] > courses[i+1]:
+                inOrder= False
+                break
+            else: 
+                inOrder= True
         sum500 = course1 + course2 + course3 + course4 + course5
-        if not inOrder or sum500 != 500:
+        if inOrder == False or sum500 != 500:
             if not inOrder:
                 flash("Courses must be ranked in descending order!")
             else:
@@ -138,6 +141,7 @@ def preferences():
             curs.execute('''select * from courses''')
             rows = curs.fetchall()
             return render_template('course_preferences.html', rows=rows)
+
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
                         [uid, course1, 1, int(request.form['weight1']), tokens, 1, int(request.form['weight1']), tokens])
@@ -153,6 +157,11 @@ def preferences():
         curs.execute('''insert into chooses (course, courseRank, courseWeight, student, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
                         [uid, course5, 5, int(request.form['weight5']), tokens, 5, int(request.form['weight5']), tokens])
+        conn.commit()
+        for i in courses:
+            curs.execute('''select avg(courseWeight) from chooses where course = %s''', i)
+            avg = int(curs.fetchone()['avg(courseWeight)'])
+            curs.execute('''update courses set weight = %s where courseid = %s''', [avg, i])
         conn.commit()
         return redirect(url_for('dashboard', status='STUDENT'))
 
