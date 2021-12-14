@@ -22,6 +22,10 @@ body {
     color:white;
 }
 
+#alg_button:hover {
+    background-color: #084484;
+}
+
 .weight_display {
     text-align: right;
     align-content: right;
@@ -36,7 +40,7 @@ h1 {
     color: #084484;
 }
 
-h2, h3, h4, .courses a{
+h2, h3, h4, .courses a {
     color: #084484;
 }
     

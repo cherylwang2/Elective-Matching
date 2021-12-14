@@ -16,18 +16,15 @@
 
 <h3>Your Courses:</h3>
 <div class="container">
-    <div class="matches row">
-      <div class="col">
-        COURSE 1
-      </div>
-      <div class="col">
-        COURSE 2
-      </div>
-      <div class="col">
-        COURSE 3
-      </div>
+    <div class="courses row">
+      {% for course in teaches %}
+      <a class="col" href="{{url_for('course', status=status, courseid=course['courseid'])}}">
+        <div>
+          CS {{course['courseid']}}<br>{{course['name']}}
+        </div>
+      </a>
+      {% endfor %}
     </div>
-    <button class="bottom_button" type="button">Edit Courses</button>
   </div>
     
 

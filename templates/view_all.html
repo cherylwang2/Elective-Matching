@@ -5,17 +5,17 @@
 <nav class="navbar navbar-expand-lg">
   <ul class="navbar-nav ml-auto">
     <li class="nav-item nav-link"><a href="#" id="alg_button">Click to run the algorithm!</a></li>
-    <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='PROFESSOR')}}">HOME</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('dashboard', status=status)}}">HOME</a></li>
     <li class="nav-item nav-link"><a href="{{url_for('add')}}">ADD A COURSE</a></li>
-    <li class="nav-item nav-link"><a href="{{url_for('view', status='PROFESSOR')}}">VIEW ALL COURSES</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('view', status=status)}}">VIEW ALL COURSES</a></li>
   </ul>
 </nav>
 {% else %}
 <nav class="navbar navbar-expand-lg">
   <ul class="navbar-nav ml-auto">
-    <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='STUDENT')}}">HOME</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('dashboard', status=status)}}">HOME</a></li>
     <li class="nav-item nav-link"><a href="{{url_for('preferences')}}">UPDATE PREFERENCES</a></li>
-    <li class="nav-item nav-link"><a href="{{url_for('view', status='STUDENT')}}">VIEW ALL COURSES</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('view', status=status)}}">VIEW ALL COURSES</a></li>
   </ul>
 </nav>
 {% endif %}
@@ -25,8 +25,6 @@
 {% block main_content %}
 <h1>All Available Courses:</h1><br>
   
-<!-- change status here to be dynamic once the sessions are up and running -->
-{% if status=='PROFESSOR' %}
 <table>
   <tr>
     <th>Course ID</th>
@@ -37,7 +35,7 @@
     <th>Waitlist Capacity</th>
   </tr>
   {% for row in rows %}
-  <tr onClick="document.location.href='{{url_for('course', courseid=row['courseid'], status='PROFESSOR')}}';">
+  <tr onClick="document.location.href='{{url_for('course', courseid=row['courseid'], status=status)}}';">
     <td><b>CS {{row['courseid']}}</b></td>
     <td>{{row['name']}}</td>
     <td>{{row['weight']}}</b></td>
@@ -47,28 +45,4 @@
   </tr>
   {% endfor %}
 </table>
-
-{% else %}
-<table>
-  <tr>
-    <th>Course ID</th>
-    <th>Course Name</th>
-    <th>Composite Weight (summed from all student users)</th>
-    <th>Meeting Times</th>
-    <th>Capacity</th>
-    <th>Waitlist Capacity</th>
-  </tr>
-    {% for row in rows %}
-    <tr onClick="document.location.href='{{url_for('course', courseid=row['courseid'], status='STUDENT')}}';">
-      <td><b>CS {{row['courseid']}}</b></td>
-      <td>{{row['name']}}</td>
-      <td>{{row['weight']}}</b></td>
-      <td>{{row['time']}}</td>
-      <td>{{row['capacity']}}</td>
-      <td>{{row['waitlistCap']}}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% endif %}
-
 {% endblock %}

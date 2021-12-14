@@ -56,9 +56,11 @@ def logged_in():
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into user (uid, name) values (%s, %s) on duplicate key update uid=uid''', [uid, session['CAS_ATTRIBUTES']['cas:givenName']])
     conn.commit()
-    if session['CAS_ATTRIBUTES']['cas:isStudent']: #to test for professor pages, add a statement saying and uid != youruidhere
+    if session['CAS_ATTRIBUTES']['cas:isStudent'] and uid != "tg2": #to test for professor pages, add a statement saying and uid != youruidhere
+        session['status'] = 'STUDENT'
         return redirect(url_for('dashboard', status='STUDENT'))
     elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
+        session['status'] = 'PROFESSOR'
         return redirect(url_for('dashboard', status='PROFESSOR'))
 
     if 'CAS_USERNAME' in session:
@@ -77,23 +79,22 @@ def view(status):
     curs.execute('''select * from courses''')
     rows = curs.fetchall()
     #rows = course.viewCourses(conn)
-    return render_template('view_all.html', rows=rows, status=status)
+    return render_template('view_all.html', rows=rows, status=session['status'])
     #classlist = courses.getallcourses()
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
     #return render_template('view.html', classes = classlist)
 
 @app.route('/dashboard/<status>/', methods=["GET", "POST"])
 def dashboard(status):
-    uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
-    print(session['CAS_ATTRIBUTES'])
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     if request.method == 'GET':
-        print(status)
+        print(session['uid'])
+        print(session['status'])
         if status == 'STUDENT':
-            #query to fetch course assignments/match suggestions
-            #this is a query to fetch top 5 courses from database
-            curs.execute('''select course, courseRank, name from chooses inner join courses where student=%s and course=courseid''', [uid])
+            #query to fetch course assignments/match suggestions missing
+
+            curs.execute('''select course, courseRank, name from chooses inner join courses where student=%s and course=courseid''', [session['uid']])
             choices = curs.fetchall()
             print(choices)
             try:
@@ -105,17 +106,22 @@ def dashboard(status):
             except:
                 return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'])
         if status == 'PROFESSOR':
-            return render_template('prof_dashboard.html', status='PROFESSOR', name=session['CAS_ATTRIBUTES']['cas:givenName'])
+            curs.execute('''select courseid, name from courses inner join teaches where courses.courseid=teaches.course and professor=%s''',
+                        [session['uid']])
+            teaches = curs.fetchall()
+            print(teaches)
+            return render_template('prof_dashboard.html', status='PROFESSOR', name=session['CAS_ATTRIBUTES']['cas:givenName'],
+                                    teaches=teaches)
     else:
         return
 
 @app.route('/preferences/', methods=['GET', 'POST'])
 def preferences():
-    uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
-    print(uid)
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
+    uid = session['uid']
     if request.method == 'GET':
+        print(session['uid'])
         curs.execute('''select * from courses''')
         rows = curs.fetchall()
         #rows = course.viewCourses(conn) --> same issue as above
@@ -184,6 +190,8 @@ def preferences():
 
 @app.route('/course/<status>/<courseid>/', methods=['GET', 'POST'])
 def course(status, courseid):
+    print(session['uid'])
+    print(session['status'])
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses where courseid = %s''',[courseid])
@@ -228,8 +236,9 @@ def syllabus(courseid):
 
 @app.route('/add/', methods=['GET', 'POST'])
 def add():
-    print(session['uid'])
     if request.method == 'GET':
+        print(session['uid'])
+        print(session['status'])
         return render_template('prof_addCourseForm.html')
     else:
         try:
@@ -240,9 +249,11 @@ def add():
             capacity = int(request.form['capacity'])
             waitlistCap = int(request.form['waitlistCap'])
             description = request.form['description']
-            print(description)
+            profID = session['uid']
             curs.execute('''insert ignore into courses (courseid, name, capacity, waitlistCap, description) values (%s, %s, %s, %s, %s)''',
                             [number, title, capacity, waitlistCap, description])
+            #caveat: here we will assume that if a professor is adding a course to the database, they themselves teach it
+            curs.execute('''insert into teaches (professor, course) values (%s, %s)''',[profID, number])
             conn.commit()
             if request.files['courseFile']:
                 try:
