@@ -17,6 +17,11 @@ body {
     font-weight: lighter;
 }
 
+#alg_button {
+    background-color: cadetblue;
+    color:white;
+}
+
 .weight_display {
     text-align: right;
     align-content: right;
