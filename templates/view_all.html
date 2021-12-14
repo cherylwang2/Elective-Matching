@@ -4,7 +4,7 @@
 {% if status=='PROFESSOR' %}
 <nav class="navbar navbar-expand-lg">
   <ul class="navbar-nav ml-auto">
-    <li class="nav-item nav-link" id="alg_button"><a href="#">Click to run the algorithm!</a></li>
+    <li class="nav-item nav-link"><a href="#" id="alg_button">Click to run the algorithm!</a></li>
     <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='PROFESSOR')}}">HOME</a></li>
     <li class="nav-item nav-link"><a href="{{url_for('add')}}">ADD A COURSE</a></li>
     <li class="nav-item nav-link"><a href="{{url_for('view', status='PROFESSOR')}}">VIEW ALL COURSES</a></li>

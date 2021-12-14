@@ -56,7 +56,7 @@ def logged_in():
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into user (uid, name) values (%s, %s) on duplicate key update uid=uid''', [uid, session['CAS_ATTRIBUTES']['cas:givenName']])
     conn.commit()
-    if session['CAS_ATTRIBUTES']['cas:isStudent'] and uid!="tg2": #to test for professor pages, add a statement saying and uid != youruidhere
+    if session['CAS_ATTRIBUTES']['cas:isStudent']: #to test for professor pages, add a statement saying and uid != youruidhere
         return redirect(url_for('dashboard', status='STUDENT'))
     elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
         return redirect(url_for('dashboard', status='PROFESSOR'))
@@ -96,12 +96,14 @@ def dashboard(status):
             curs.execute('''select course, courseRank, name from chooses inner join courses where student=%s and course=courseid''', [uid])
             choices = curs.fetchall()
             print(choices)
-
-            return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'], 
-                                    course1 = choices[0]['course'], course2 = choices[1]['course'], course3=choices[2]['course'], 
-                                    course4=choices[3]['course'], course5=choices[4]['course'], course1name=choices[0]['name'],
-                                    course2name=choices[1]['name'], course3name=choices[2]['name'], course4name=choices[3]['name'],
-                                    course5name=choices[4]['name'])
+            try:
+                return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'], 
+                                        course1 = choices[0]['course'], course2 = choices[1]['course'], course3=choices[2]['course'], 
+                                        course4=choices[3]['course'], course5=choices[4]['course'], course1name=choices[0]['name'],
+                                        course2name=choices[1]['name'], course3name=choices[2]['name'], course4name=choices[3]['name'],
+                                        course5name=choices[4]['name'])
+            except:
+                return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'])
         if status == 'PROFESSOR':
             return render_template('prof_dashboard.html', status='PROFESSOR', name=session['CAS_ATTRIBUTES']['cas:givenName'])
     else:
@@ -226,6 +228,7 @@ def syllabus(courseid):
 
 @app.route('/add/', methods=['GET', 'POST'])
 def add():
+    print(session['uid'])
     if request.method == 'GET':
         return render_template('prof_addCourseForm.html')
     else:
