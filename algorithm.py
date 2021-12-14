@@ -13,6 +13,8 @@ test = [{'student': 1, 'course': 304, 'courseRank': 1, 'courseWeight': 300, 'tok
         {'student': 2, 'course': 315, 'courseRank': 4, 'courseWeight': 10, 'tokens':400, 'capacity':3},
         {'student': 2, 'course': 320, 'courseRank': 5, 'courseWeight': 15, 'tokens':400, 'capacity':1}]
 
+#curs.execute('''select * from chooses inner join courses on chooses.course = courses.courseid order by chooses.uid ASC and courseRank ASC''')
+
 #created from inner join chooses with courses on chooses.course = courses.courseid
 def create_Ineq(chooses, students, length): #make sure chooses sorts students by ASC and rank by ASC
     #assumes each student chooses 5 classes
