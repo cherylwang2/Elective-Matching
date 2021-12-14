@@ -93,3 +93,4 @@ def readSolutionSet(solSet, conn):
             uid = i[0]
             course = i[1]
             curs.execute('''insert into assignments (uid, course) values %s, %s''', [uid, course])
+            conn.commit()
