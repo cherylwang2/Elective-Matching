@@ -124,12 +124,18 @@ def preferences():
         conn.commit()
         curs.execute('''select classYear from user where uid = %s''', [uid])
         tokens = yearDict[curs.fetchone()['classYear']]
+        course1= int(request.form['course1'])
+        course2= int(request.form['course2'])
+        course3= int(request.form['course3'])
+        course4= int(request.form['course4'])
+        course5= int(request.form['course5'])
         weight1= int(request.form['weight1'])
         weight2= int(request.form['weight2'])
         weight3= int(request.form['weight3'])
         weight4= int(request.form['weight4'])
         weight5= int(request.form['weight5'])
         weights = [weight1,weight2,weight3,weight4,weight5]
+        courseSet = {course1, course2, course3, course4, course5}
         for i in range(4):
             if weights[i] < weights[i+1]:
                 inOrder= False
@@ -137,30 +143,32 @@ def preferences():
             else: 
                 inOrder= True
         sum500 = weight1 + weight2 + weight3 + weight4 + weight5
-        if inOrder == False or sum500 != 500:
+        if inOrder == False or sum500 != 500 or len(courseSet) != 5:
             if not inOrder: 
                 flash("Courses must be ranked in descending order!")
-            else:
+            elif sum500 != 500:
                 flash("Courses must sum up to 500!")
+            else:
+                flash("Courses must be distinct!")
             curs.execute('''select * from courses''')
             rows = curs.fetchall()
             return render_template('course_preferences.html', rows=rows)
 
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course1']), 1, weight1, tokens, int(request.form['course1']), weight1, tokens])
+                        [uid, course1, 1, weight1, tokens, course1, weight1, tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course2']), 2, weight2, tokens, int(request.form['course2']), weight2, tokens])
+                        [uid, course2, 2, weight2, tokens, course2, weight2, tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course3']), 3, weight3, tokens, int(request.form['course3']), weight3, tokens])
+                        [uid, course3, 3, weight3, tokens, course3, weight3, tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course4']), 4, weight4, tokens, int(request.form['course4']), weight4, tokens])
+                        [uid, course4, 4, weight4, tokens, course4, weight4, tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course5']), 5, weight5, tokens, int(request.form['course5']), weight5, tokens])
+                        [uid, course5, 5, weight5, tokens, course5, weight5, tokens])
         conn.commit()
         for i in weights:
             curs.execute('''select avg(courseWeight) as average from chooses where courseWeight = %s''', i)
