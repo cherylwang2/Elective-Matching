@@ -171,8 +171,8 @@ def preferences():
                         values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
                         [uid, course5, 5, weight5, tokens, course5, weight5, tokens])
         conn.commit()
-        for i in weights:
-            curs.execute('''select avg(courseWeight) as average from chooses where courseWeight = %s''', i)
+        for i in courseSet:
+            curs.execute('''select avg(courseWeight) as average from chooses where course = %s''', i)
             cursor = curs.fetchone()
             print(cursor)
             avg = int(cursor['average'])
