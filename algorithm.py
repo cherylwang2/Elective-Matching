@@ -63,7 +63,7 @@ def LP_det_avg(chooses, students, length):
             c[index] = x
             x += 0.1
             index += 1
-    LPSolution = linprog(c, A_ub=A_ineq, b_ub=B_ineq, method='interior-point')
+    LPSolution = linprog(c, A_ub=A_ineq, b_ub=B_ineq, method='simplex')
     LPSum = 0
     totalSeatsOffered = 0
     solutionSet = []
