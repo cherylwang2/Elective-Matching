@@ -48,7 +48,7 @@ def set_status_student():
 def index():
     return render_template('signup.html',title='Welcome!')
 
-@app.route('/logged_in/')
+@app.route('/logged_in/') 
 def logged_in():
     uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
     session['uid'] = uid
@@ -56,7 +56,7 @@ def logged_in():
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into user (uid, name) values (%s, %s) on duplicate key update uid=uid''', [uid, session['CAS_ATTRIBUTES']['cas:givenName']])
     conn.commit()
-    if session['CAS_ATTRIBUTES']['cas:isStudent']:
+    if session['CAS_ATTRIBUTES']['cas:isStudent'] and uid!="tg2": #to test for professor pages, add a statement saying and uid != youruidhere
         return redirect(url_for('dashboard', status='STUDENT'))
     elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
         return redirect(url_for('dashboard', status='PROFESSOR'))
