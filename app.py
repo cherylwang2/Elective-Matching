@@ -1,4 +1,4 @@
-import os
+import sys, os
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
 from werkzeug.utils import secure_filename
@@ -51,6 +51,7 @@ def index():
 @app.route('/logged_in/')
 def logged_in():
     uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
+    session['uid'] = uid
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into user (uid, name) values (%s, %s) on duplicate key update uid=uid''', [uid, session['CAS_ATTRIBUTES']['cas:givenName']])
@@ -69,14 +70,14 @@ def logged_in():
         username = None
         print('CAS_USERNAME is not in the session')
 
-@app.route('/view/')
-def view():
+@app.route('/view/<status>')
+def view(status):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses''')
     rows = curs.fetchall()
     #rows = course.viewCourses(conn)
-    return render_template('view_all.html', rows=rows)
+    return render_template('view_all.html', rows=rows, status=status)
     #classlist = courses.getallcourses()
     #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
     #return render_template('view.html', classes = classlist)
@@ -91,20 +92,20 @@ def dashboard(status):
         print(status)
         if status == 'STUDENT':
             #query to fetch course assignments/match suggestions
-            #query to fetch top 5 courses from database
-            curs.execute('''select course, courseRank from chooses where student=%s''', [uid])
+            #this is a query to fetch top 5 courses from database
+            curs.execute('''select course, courseRank, name from chooses inner join courses where student=%s and course=courseid''', [uid])
             choices = curs.fetchall()
             print(choices)
-            #STOPPED HERE - AFTER THIS, ADD ENOUGH TEST DATA FOR 5 COURSES
-            #USE INFO FROM CURSOR TO RENDER DASHBOARD COMPLETELY
+
             return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'], 
                                     course1 = choices[0]['course'], course2 = choices[1]['course'], course3=choices[2]['course'], 
-                                    course4=choices[3]['course'], course5=choices[4]['course'])
+                                    course4=choices[3]['course'], course5=choices[4]['course'], course1name=choices[0]['name'],
+                                    course2name=choices[1]['name'], course3name=choices[2]['name'], course4name=choices[3]['name'],
+                                    course5name=choices[4]['name'])
         if status == 'PROFESSOR':
             return render_template('prof_dashboard.html', status='PROFESSOR', name=session['CAS_ATTRIBUTES']['cas:givenName'])
     else:
         return
-        #no post for dashboard, right? now that we've separated out preferences?
 
 @app.route('/preferences/', methods=['GET', 'POST'])
 def preferences():
@@ -177,24 +178,43 @@ def course(status, courseid):
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses where courseid = %s''',[courseid])
     courseInfo = curs.fetchone()
+    print(courseInfo)
 
     curs.execute('''select * from user where uid in (select uid from assignments where course=%s)''',[courseid])
     students = curs.fetchall()
+
+    curs.execute('''select filename from courses where courseid=%s''', [courseid])
+    syllabus = curs.fetchone()
+    syllabus_src = url_for('syllabus', courseid=courseid)
     #courseInfo = course.chooseCourse(conn, courseid) --> same
     #students = course.getStudents(conn, courseid) --> same
 
-    #TODO: if student, render different detail page without buttons to edit
-    #if professor, render this
     if status == 'STUDENT':
-        return render_template('courseDetail.html', courseInfo=courseInfo, students=students)
+        return render_template('courseDetail.html', courseInfo=courseInfo, students=students, syllabus_src=syllabus_src)
     elif status == 'PROFESSOR':
-        return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students)
+        return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students, syllabus_src=syllabus_src)
     #courseInfo = courses.getCourseInfo(courseid)
     #select course info
     #return render_template('prof_courseDetail.html', courseInfo=courseInfo)
 
 #HARDCODING GLOBAL UID VARIABLE FOR TESTING PURPOSES, IGNORE WHEN WE IMPLEMENT LOGINS + SESSIONS
-uid = 123
+#uid = 123
+
+@app.route('/syllabus/<courseid>')
+def syllabus(courseid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    numrows = curs.execute(
+        '''select filename from courses where courseid = %s''',
+        [courseid])
+    if numrows == 0:
+        flash('No syllabus uploaded yet for {}'.format(courseid))
+        return redirect(url_for('/add/'))
+    row = curs.fetchone()
+    try:
+        return send_from_directory(app.config['UPLOADS'],row['filename'])
+    except:
+        return ("No syllabus yet. Sorry about that!")
 
 @app.route('/add/', methods=['GET', 'POST'])
 def add():
@@ -203,27 +223,32 @@ def add():
     else:
         try:
             conn = dbi.connect()
+            curs = dbi.dict_cursor(conn)
             number = request.form['number']
             title = request.form['title']
             capacity = int(request.form['capacity'])
             waitlistCap = int(request.form['waitlistCap'])
-            print(number)
-            course.insertCourse(conn, number, title, capacity, waitlistCap)
-
-            if request.form['courseFile']:
+            description = request.form['description']
+            print(description)
+            curs.execute('''insert ignore into courses (courseid, name, capacity, waitlistCap, description) values (%s, %s, %s, %s, %s)''',
+                            [number, title, capacity, waitlistCap, description])
+            conn.commit()
+            if request.files['courseFile']:
                 try:
                     f = request.files['courseFile']
                     user_filename = f.filename
                     ext = user_filename.split('.')[-1]
-                    filename = secure_filename('{}.{}'.format(uid,ext))
+                    filename = secure_filename('{}.{}'.format(session['uid'],ext))
                     pathname = os.path.join(app.config['UPLOADS'],filename)
                     f.save(pathname)
                     conn = dbi.connect()
                     curs = dbi.dict_cursor(conn)
-                    #curs.execute(query to insert file into the database)
+                    curs.execute('''update courses set filename = %s where courseid=%s''', 
+                                [filename, number])
+                    conn.commit()
                 except Exception as err:
                     flash('Upload failed {why}'.format(why=err))
-            return render_template('prof_addCourseForm.html') #prob change this to the detail page of the course they just added
+            return redirect(url_for('course', status='PROFESSOR', courseid=number))
         except:
             flash('Oh no! That course already exists. Enter a different one:') #TODO: change error message
             return render_template('prof_addCourseForm.html')

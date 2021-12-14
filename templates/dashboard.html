@@ -21,21 +21,31 @@
 <h3>Your Top 5 Courses:</h3>
 <div class="container">
   <div class="courses row">
-    <div class="col">
-      {{course1}}
+  <a class="col" href="{{url_for('course', status=status, courseid=course1)}}">
+    <div>
+      CS {{course1}}<br>{{course1name}}
     </div>
-    <div class="col">
-      {{course2}}
+  </a>
+  <a class="col" href="{{url_for('course', status=status, courseid=course2)}}">
+    <div>
+      CS {{course2}}<br>{{course2name}}
     </div>
-    <div class="col">
-      {{course3}}
+  </a>
+  <a class="col" href="{{url_for('course', status=status, courseid=course3)}}">
+    <div>
+      CS {{course3}}<br>{{course3name}}
     </div>
-    <div class="col">
-      {{course4}}
+  </a>
+  <a class="col" href="{{url_for('course', status=status, courseid=course4)}}">
+    <div>
+      CS {{course4}}<br>{{course4name}}
     </div>
-    <div class="col">
-      {{course5}}
+  </a>
+  <a class="col" href="{{url_for('course', status=status, courseid=course5)}}">
+    <div>
+      CS {{course5}}<br>{{course5name}}
     </div>
+  </a>
   </div>
 </div>
 

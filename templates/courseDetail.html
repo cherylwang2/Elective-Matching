@@ -5,14 +5,14 @@
 <h1>{{courseInfo['name']}}</h1><br>
 </div>
 
-<!-- leaving this here for now because we don't have descriptions in database yet... -->
-<p>Course Description Here. This is an example one from CS 304: A study 
-  of the three-layer architecture commonly used for Web-based applications 
-  such as e-commerce sites. We will learn to model and design databases using
-   entity-relationship diagrams and the Standard Query Language (SQL) for managing
-    databases. We will focus on Flask, a popular Python-based web micro-framework, 
-    as well as important alternatives such as Node.js. We will learn about implementing 
-    features using Ajax. We will also discuss performance, reliability, and security 
-    issues. Finally, we will create dynamic websites driven by database entries.</p>
+<p>{{courseInfo['description']}}</p>
+
+<br>
+
+{% if courseInfo['filename'] != NULL %}
+<iframe src="{{syllabus_src}}#toolbar=0"
+        width="100%" height="500px">
+</iframe>
+{% endif %}
 
 {% endblock %}

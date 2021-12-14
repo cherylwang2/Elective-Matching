@@ -23,7 +23,8 @@ create table courses (
 	`name` varchar(200) not null,
 	capacity tinyint not null,
 	waitlistCap tinyint not null, 
-	syllabus varchar(50),
+	`description` varchar(1000),
+	filename varchar(50),
 	`weight` int, 
 	`time` varchar(200) not null,
 	primary key(courseid)

@@ -1,17 +1,65 @@
 {% extends "base.html" %}
 
+{% if status=='PROFESSOR' %}
+{% block nav %}
+<nav class="navbar navbar-expand-lg">
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='PROFESSOR')}}">HOME</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('add')}}">ADD A COURSE</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('view', status='PROFESSOR')}}">VIEW ALL COURSES</a></li>
+  </ul>
+</nav>
+{% endblock %}
+
+{% endif %}
+
 {% block main_content %}
 <h1>All Available Courses:</h1><br>
   
 <!-- change status here to be dynamic once the sessions are up and running -->
+{% if status=='PROFESSOR' %}
 <table>
-      {% for row in rows %}
-      <td onClick="document.location.href='{{url_for('course', courseid=row['courseid'], status='STUDENT')}}';"><b>CS {{row['courseid']}} &ensp; {{row['name']}} &emsp;&emsp;&emsp;Composite Weight: {{row['weight']}}</b>
-        <br>Meeting Times: {{row['time']}}
-        <br>Capacity: {{row['capacity']}}  &emsp;Waitlist Capacity: {{row['waitlistCap']}}
-      </td></a>
-      {% endfor %}
+  <tr>
+    <th>Course ID</th>
+    <th>Course Name</th>
+    <th>Composite Weight (summed from all student users)</th>
+    <th>Meeting Times</th>
+    <th>Capacity</th>
+    <th>Waitlist Capacity</th>
+  </tr>
+  {% for row in rows %}
+  <tr onClick="document.location.href='{{url_for('course', courseid=row['courseid'], status='PROFESSOR')}}';">
+    <td><b>CS {{row['courseid']}}</b></td>
+    <td>{{row['name']}}</td>
+    <td>{{row['weight']}}</b></td>
+    <td>{{row['time']}}</td>
+    <td>{{row['capacity']}}</td>
+    <td>{{row['waitlistCap']}}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% else %}
+<table>
+  <tr>
+    <th>Course ID</th>
+    <th>Course Name</th>
+    <th>Composite Weight (summed from all student users)</th>
+    <th>Meeting Times</th>
+    <th>Capacity</th>
+    <th>Waitlist Capacity</th>
+  </tr>
+    {% for row in rows %}
+    <tr onClick="document.location.href='{{url_for('course', courseid=row['courseid'], status='STUDENT')}}';">
+      <td><b>CS {{row['courseid']}}</b></td>
+      <td>{{row['name']}}</td>
+      <td>{{row['weight']}}</b></td>
+      <td>{{row['time']}}</td>
+      <td>{{row['capacity']}}</td>
+      <td>{{row['waitlistCap']}}</td>
     </tr>
-  </table>
+    {% endfor %}
+</table>
+{% endif %}
 
 {% endblock %}

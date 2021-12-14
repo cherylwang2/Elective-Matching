@@ -5,7 +5,7 @@
   <ul class="navbar-nav ml-auto">
     <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='PROFESSOR')}}">HOME</a></li>
     <li class="nav-item nav-link"><a href="{{url_for('add')}}">ADD A COURSE</a></li>
-    <li class="nav-item nav-link"><a href="{{url_for('view')}}">VIEW ALL COURSES</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('view', status='PROFESSOR')}}">VIEW ALL COURSES</a></li>
   </ul>
 </nav>
 {% endblock %}
@@ -24,8 +24,8 @@
         <td><input id="capacity" type="text" name="capacity"></td></tr>
     <tr><td><label for="waitlistCap">Enter the waitlist capacity:</label></td>
         <td><input id="waitlistCap" type="text" name="waitlistCap"></td></tr>
-    <tr><td><label for="description">Enter a brief course description:</label></td>
-        <td><input id="description" type="text" name="description"></td></tr>
+    <tr><td><label for="description">Enter a brief course description (max 1000 characters):</label></td>
+        <td><textarea id="description" rows="5" cols="60" name="description"></textarea></td></tr>
     <tr><td><label for="courseFile">Upload course materials:</label></td>
         <td><input id="courseFile" type="file" name="courseFile"></td></tr>
     </table>

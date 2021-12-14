@@ -31,7 +31,7 @@ h1 {
     color: #084484;
 }
 
-h2, h3, h4 {
+h2, h3, h4, .courses a{
     color: #084484;
 }
     
@@ -99,7 +99,19 @@ nav li.right {
     background-color: #c9c9c9;
 }
 
-button:hover, button:focus, nav a:hover, nav a:focus {
+iframe {
+    height: 70em;
+}
+
+a:hover{
+    text-decoration: none;
+}
+
+.courses a {
+    font-size: 115%;
+}
+
+button:hover, button:focus, nav a:hover, nav a:focus, .courses a:hover {
     text-decoration: none;
     color: #c9c9c9;
     background-color: #084484;
