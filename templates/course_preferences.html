@@ -1,9 +1,43 @@
 {% extends "base.html" %}
 
 {% block main_content %}
+
+<h1>Tell us a bit about yourself:</h1> 
+<br>
+<form method="post" action="{{url_for('preferences', status='STUDENT', class1=class1, class2=class2, class3=class3, class4=class4, class5=class5)}}">
+  <div class="col">
+  <div class="row">
+    <label for="classYear">Enter your class year:&nbsp;</label><br>
+    <input type="text" id="classYear" name="classYear"><br>
+  </div><br>
+  <div class="row">
+    <label for="major1">Enter your major:&nbsp;</label>
+    <select id="major1" name="major1">
+      <option value="none">Select your major... </option>
+        <option value="CS">Computer Science</option>
+        <option value="DS">Data Science</option>
+        <option value="MAS">Media Arts & Sciences</option>
+        <option value="other">Other</option>
+    </select>
+  </div><br>
+  <div class="row">
+    <label for="major2">Enter your second major...&nbsp;</label><br>
+    <input type="text" id="major2" name="major2"><br>
+  </div><br>
+  <div class="row">
+    <label for="minor">If you have a minor, select it here:&nbsp;</label><br>
+    <select id="minor" name="minor">
+      <option value="none">Select your minor...</option>
+        <option value="CS">Computer Science</option>
+        <option value="DS">Data Science</option>
+        <option value="MAS">Media Arts & Sciences</option>
+        <option value="other">Other</option>
+    </select>
+  </div><br>
+</div>
+
 <h1>Choose your top 5 courses:</h1><br>
   
-  <form method="post" action="{{url_for('preferences', status='STUDENT', class1=class1, class2=class2, class3=class3, class4=class4, class5=class5)}}">
   <table>
     <tr>
       <th>Rank</th>

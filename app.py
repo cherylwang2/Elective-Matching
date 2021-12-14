@@ -84,6 +84,7 @@ def view():
 @app.route('/dashboard/<status>/', methods=["GET", "POST"])
 def dashboard(status):
     uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
+    print(session['CAS_ATTRIBUTES'])
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     if request.method == 'GET':
@@ -108,6 +109,7 @@ def dashboard(status):
 @app.route('/preferences/', methods=['GET', 'POST'])
 def preferences():
     uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
+    print(uid)
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     if request.method == 'GET':
@@ -118,23 +120,25 @@ def preferences():
     else:
         #insert query to input rank info into database
         yearDict = {'2022':500, '2023':400, '2024':300, '2025':200} #update each year
+        curs.execute('''update user set classYear = %s where uid = %s''', [request.form['classYear'], uid])
+        conn.commit()
         curs.execute('''select classYear from user where uid = %s''', [uid])
-        tokens = yearDict[curs.fetchone(['classYear'])]
-        course1= int(request.form['course1'])
-        course2= int(request.form['course2'])
-        course3= int(request.form['course3'])
-        course4= int(request.form['course4'])
-        course5= int(request.form['course5'])
-        courses = [course1,course2,course3,course4,course5]
-        for i in range(5):
-            if courses[i] > courses[i+1]:
+        tokens = yearDict[curs.fetchone()['classYear']]
+        weight1= int(request.form['weight1'])
+        weight2= int(request.form['weight2'])
+        weight3= int(request.form['weight3'])
+        weight4= int(request.form['weight4'])
+        weight5= int(request.form['weight5'])
+        weights = [weight1,weight2,weight3,weight4,weight5]
+        for i in range(4):
+            if weights[i] < weights[i+1]:
                 inOrder= False
                 break
             else: 
                 inOrder= True
-        sum500 = course1 + course2 + course3 + course4 + course5
+        sum500 = weight1 + weight2 + weight3 + weight4 + weight5
         if inOrder == False or sum500 != 500:
-            if not inOrder:
+            if not inOrder: 
                 flash("Courses must be ranked in descending order!")
             else:
                 flash("Courses must sum up to 500!")
@@ -143,24 +147,26 @@ def preferences():
             return render_template('course_preferences.html', rows=rows)
 
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
-                        values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, course1, 1, int(request.form['weight1']), tokens, 1, int(request.form['weight1']), tokens])
+                        values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
+                        [uid, int(request.form['course1']), 1, weight1, tokens, int(request.form['course1']), weight1, tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
-                        values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, course2, 2, int(request.form['weight2']), tokens, 2, int(request.form['weight2']), tokens])
+                        values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
+                        [uid, int(request.form['course2']), 2, weight2, tokens, int(request.form['course2']), weight2, tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
-                        values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, course3, 3, int(request.form['weight3']), tokens, 3, int(request.form['weight3']), tokens])
+                        values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
+                        [uid, int(request.form['course3']), 3, weight3, tokens, int(request.form['course3']), weight3, tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
-                        values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, course4, 4, int(request.form['weight4']), tokens, 4, int(request.form['weight4']), tokens])
-        curs.execute('''insert into chooses (course, courseRank, courseWeight, student, tokens)
-                        values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, course5, 5, int(request.form['weight5']), tokens, 5, int(request.form['weight5']), tokens])
+                        values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
+                        [uid, int(request.form['course4']), 4, weight4, tokens, int(request.form['course4']), weight4, tokens])
+        curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
+                        values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
+                        [uid, int(request.form['course5']), 5, weight5, tokens, int(request.form['course5']), weight5, tokens])
         conn.commit()
-        for i in courses:
-            curs.execute('''select avg(courseWeight) from chooses where course = %s''', i)
-            avg = int(curs.fetchone()['avg(courseWeight)'])
+        for i in weights:
+            curs.execute('''select avg(courseWeight) as average from chooses where courseWeight = %s''', i)
+            cursor = curs.fetchone()
+            print(cursor)
+            avg = int(cursor['average'])
             curs.execute('''update courses set weight = %s where courseid = %s''', [avg, i])
         conn.commit()
         return redirect(url_for('dashboard', status='STUDENT'))
