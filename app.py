@@ -19,6 +19,7 @@ import random
 import course
 
 # new for CAS
+
 from flask_cas import CAS
 
 CAS(app)
@@ -122,21 +123,36 @@ def preferences():
         yearDict = {'2022':500, '2023':400, '2024':300, '2025':200} #update each year
         tokens = int(curs.execute('''select classYear from user where uid = %s''', [uid])['classYear'])
         tokens = yearDict[tokens]
+        course1= int(request.form['course1'])
+        course2= int(request.form['course2'])
+        course3= int(request.form['course3'])
+        course4= int(request.form['course4'])
+        course5= int(request.form['course5'])
+        inOrder = course.inDescOrder([course1,course2,course3,course4,course5])
+        sum500 = course1 + course2 + course3 + course4 + course5
+        if not inOrder or sum500 != 500:
+            if not inOrder:
+                flash("Courses must be ranked in descending order!")
+            else:
+                flash("Courses must sum up to 500!")
+            curs.execute('''select * from courses''')
+            rows = curs.fetchall()
+            return render_template('course_preferences.html', rows=rows)
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course1']), 1, int(request.form['weight1']), tokens, 1, int(request.form['weight1']), tokens])
+                        [uid, course1, 1, int(request.form['weight1']), tokens, 1, int(request.form['weight1']), tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course2']), 2, int(request.form['weight2']), tokens, 2, int(request.form['weight2']), tokens])
+                        [uid, course2, 2, int(request.form['weight2']), tokens, 2, int(request.form['weight2']), tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course3']), 3, int(request.form['weight3']), tokens, 3, int(request.form['weight3']), tokens])
+                        [uid, course3, 3, int(request.form['weight3']), tokens, 3, int(request.form['weight3']), tokens])
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course4']), 4, int(request.form['weight4']), tokens, 4, int(request.form['weight4']), tokens])
+                        [uid, course4, 4, int(request.form['weight4']), tokens, 4, int(request.form['weight4']), tokens])
         curs.execute('''insert into chooses (course, courseRank, courseWeight, student, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update courseRank = %s, courseWeight = %s, tokens = %s''', 
-                        [uid, int(request.form['course5']), 5, int(request.form['weight5']), tokens, 5, int(request.form['weight5']), tokens])
+                        [uid, course5, 5, int(request.form['weight5']), tokens, 5, int(request.form['weight5']), tokens])
         conn.commit()
         return redirect(url_for('dashboard', status='STUDENT'))
 

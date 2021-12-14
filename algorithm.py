@@ -2,6 +2,17 @@
 from scipy.optimize import linprog
 import numpy as np
 
+test = [{'student': 1, 'course': 304, 'courseRank': 1, 'courseWeight': 300, 'tokens':300, 'capacity':1},
+        {'student': 1, 'course': 305, 'courseRank': 2, 'courseWeight': 350, 'tokens':300, 'capacity':2},
+        {'student': 1, 'course': 306, 'courseRank': 3, 'courseWeight': 1, 'tokens':300, 'capacity':1},
+        {'student': 1, 'course': 330, 'courseRank': 4, 'courseWeight': 10, 'tokens':300, 'capacity':2},
+        {'student': 1, 'course': 320, 'courseRank': 5, 'courseWeight': 15, 'tokens':300, 'capacity':1},
+        {'student': 2, 'course': 304, 'courseRank': 1, 'courseWeight': 300, 'tokens':400, 'capacity':1},
+        {'student': 2, 'course': 306, 'courseRank': 2, 'courseWeight': 1, 'tokens':400, 'capacity':1},
+        {'student': 2, 'course': 305, 'courseRank': 3, 'courseWeight': 350, 'tokens':400, 'capacity':2},
+        {'student': 2, 'course': 315, 'courseRank': 4, 'courseWeight': 10, 'tokens':400, 'capacity':3},
+        {'student': 2, 'course': 320, 'courseRank': 5, 'courseWeight': 15, 'tokens':400, 'capacity':1}]
+
 #created from inner join chooses with courses on chooses.course = courses.courseid
 def create_Ineq(chooses, students, length): #make sure chooses sorts students by ASC and rank by ASC
     #assumes each student chooses 5 classes
@@ -75,6 +86,10 @@ def LP_det_avg(chooses, students, length):
     print(" ")
     return solutionSet
 
-#def readSolutionSet(solSet, conn):
-#    curs = dbi.dict_cursor(conn)
-#    curs.execute('''insert )
+def readSolutionSet(solSet, conn):
+    curs = dbi.dict_cursor(conn)
+    for i in solSet:
+        if i[2] == 1:
+            uid = i[0]
+            course = i[1]
+            curs.execute('''insert into assignments (uid, course) values %s, %s''', [uid, course])
