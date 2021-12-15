@@ -12,7 +12,7 @@ app = Flask(__name__)
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
 
-import algorithm
+import algorithm as alg
 import random
 
 # new for CAS
@@ -56,7 +56,7 @@ def logged_in():
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into user (uid, name) values (%s, %s) on duplicate key update uid=uid''', [uid, session['CAS_ATTRIBUTES']['cas:givenName']])
     conn.commit()
-    if session['CAS_ATTRIBUTES']['cas:isStudent'] and uid != "tg2": #to test for professor pages, add a statement saying and uid != youruidhere
+    if session['CAS_ATTRIBUTES']['cas:isStudent'] and uid != "cw5": #to test for professor pages, add a statement saying and uid != youruidhere
         session['status'] = 'STUDENT'
         return redirect(url_for('dashboard', status='STUDENT'))
     elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
@@ -275,20 +275,22 @@ def add():
             flash('Oh no! That course already exists. Enter a different one:') #TODO: change error message
             return render_template('prof_addCourseForm.html')
 
-@app.route('/algorithm/', methods=['POST'])
+@app.route('/algorithm/', methods=['GET'])
 def algorithm():
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
-    curs.execute('''select * from chooses inner join courses on (chooses.course = courses.courseid)
-    order by chooses.uid, courseRank''')
+    curs.execute('''select c.student, c.course, c.courseRank, c.courseWeight, c.tokens, courses.capacity from chooses c inner join courses on (c.course = courses.courseid)
+    order by c.student, courseRank''')
     chooses = curs.fetchall()
-    curs.execute('''select count(student) from chooses''')
-    students = int(curs.fetchone()['count(student)'])
+    curs.execute('''select count(student)/5 as count from chooses''')
+    students = int(curs.fetchone()['count'])
     length = students * 5
-    lists = algorithm.create_Ineq(chooses, students, length)
-    solSet = algorithm.LP_det_avg(chooses, students, length)
-    algorithm.readSolutionSet(solSet, conn)
-    return redirect(url_for('preferences'))
+    lists = alg.create_Ineq(chooses, students, length)
+    solSet = alg.LP_det_avg(chooses, students, length)
+    alg.readSolutionSet(solSet, conn)
+    print(solSet)
+    conn.commit()
+    return redirect(url_for('dashboard', status=session['status']))
 
 @app.before_first_request
 def init_db():

@@ -1,6 +1,7 @@
 #need to import numpy
 from scipy.optimize import linprog
 import numpy as np
+import cs304dbi as dbi
 
 test = [{'student': 1, 'course': 304, 'courseRank': 1, 'courseWeight': 300, 'tokens':300, 'capacity':1},
         {'student': 1, 'course': 305, 'courseRank': 2, 'courseWeight': 350, 'tokens':300, 'capacity':2},
@@ -19,6 +20,7 @@ test = [{'student': 1, 'course': 304, 'courseRank': 1, 'courseWeight': 300, 'tok
 def create_Ineq(chooses, students, length): #make sure chooses sorts students by ASC and rank by ASC
     #assumes each student chooses 5 classes
     '''chooses is curs object being returned, students is num students, length is length of array'''
+    print(chooses)
     index = 0
     indexDict = {}
     A_ineq = []
@@ -30,7 +32,10 @@ def create_Ineq(chooses, students, length): #make sure chooses sorts students by
                 indexDict[chooses[index]['course']].append(index)
             else:
                 indexDict[chooses[index]['course']] = [index]
-            emptyList[index] = chooses[index]['courseWeight']
+            if chooses[index]['courseWeight'] == 'None' or chooses[index]['courseWeight'] == None:
+                emptyList[index] = 0
+            else:
+                emptyList[index] = chooses[index]['courseWeight']
             index += 1
         A_ineq.append(emptyList)
         B_ineq.append(chooses[index - 1]['tokens'])
@@ -52,14 +57,19 @@ def create_Ineq(chooses, students, length): #make sure chooses sorts students by
     return [A_ineq, B_ineq]
 
 def LP_det_avg(chooses, students, length):
+    print("students", students)
     ineq = create_Ineq(chooses, students, length)
     A_ineq = ineq[0]
+    print(A_ineq)
     B_ineq = ineq[1]
-    c = [0. for i in range(len(A_ineq))]
+    print(B_ineq)
+    c = [0. for i in range(students * 5)]
     index = 0
     for i in range(students):
+        print(c)
         x = 1
         for j in range(5):
+            print(index)
             c[index] = x
             x += 0.1
             index += 1
@@ -94,5 +104,5 @@ def readSolutionSet(solSet, conn):
         if i[2] == 1:
             uid = i[0]
             course = i[1]
-            curs.execute('''insert into assignments (uid, course) values %s, %s''', [uid, course])
+            curs.execute('''insert into assignments (uid, course) values (%s, %s)''', [uid, course])
             conn.commit()
