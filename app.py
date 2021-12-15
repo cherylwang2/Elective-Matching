@@ -12,11 +12,11 @@ app = Flask(__name__)
 import cs304dbi as dbi
 # import cs304dbi_sqlite3 as dbi
 
+#importing algorithm module
 import algorithm as alg
 import random
 
 # new for CAS
-
 from flask_cas import CAS
 
 CAS(app)
@@ -41,13 +41,14 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 app.config['UPLOADS'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 1*1024*1024
 
-def set_status_student():
-    session['user_status'] = 'student'
-
+#index/signup route opens for users before they go to dashboard
 @app.route('/')
 def index():
     return render_template('signup.html',title='Welcome!')
 
+#pull account name out of CAS for unique uid and store in session
+#pull given name (first name) out of CAS and store in database, + greet user
+#depending on CAS attributes, redirect to either student dashboard or faculty dashboard
 @app.route('/logged_in/') 
 def logged_in():
     uid = session['CAS_ATTRIBUTES']['cas:sAMAccountName']
@@ -56,12 +57,13 @@ def logged_in():
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into user (uid, name) values (%s, %s) on duplicate key update uid=uid''', [uid, session['CAS_ATTRIBUTES']['cas:givenName']])
     conn.commit()
-    if session['CAS_ATTRIBUTES']['cas:isStudent']: #to test for professor pages, add a statement saying and uid != youruidhere
+    #NO MATTER WHAT the user clicks, redirect them to page based off of CAS attributes 
+    #safety measure, don't want students to be signing in as professors and having extra permissions
+    if session['CAS_ATTRIBUTES']['cas:isStudent']: #to test for professor pages, add a statement saying 'and uid != youruidhere'
         session['status'] = 'STUDENT'
-        return redirect(url_for('dashboard', status='STUDENT'))
     elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
         session['status'] = 'PROFESSOR'
-        return redirect(url_for('dashboard', status='PROFESSOR'))
+    return redirect(url_for('dashboard', status=session['status']))
 
     if 'CAS_USERNAME' in session:
         is_logged_in = True
@@ -72,18 +74,17 @@ def logged_in():
         username = None
         print('CAS_USERNAME is not in the session')
 
+#route to view list of all available courses
+#nav bar changes based on status so you can't change between student and professor permissions
 @app.route('/view/<status>')
 def view(status):
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from courses''')
     rows = curs.fetchall()
-    #rows = course.viewCourses(conn)
     return render_template('view_all.html', rows=rows, status=session['status'])
-    #classlist = courses.getallcourses()
-    #selects coursename, courseprofessor, coursedescription... SHOULD BE LINKS
-    #return render_template('view.html', classes = classlist)
 
+#route to render dashboard for students and professors
 @app.route('/dashboard/<status>/', methods=["GET", "POST"])
 def dashboard(status):
     conn = dbi.connect()
@@ -92,23 +93,28 @@ def dashboard(status):
         print(session['uid'])
         print(session['status'])
         if status == 'STUDENT':
-            #query to fetch course assignments/match suggestions missing
+            #query to fetch course assignments/match suggestions
             curs.execute('''select course, name from assignments inner join courses where course=courses.courseid and uid=%s''',
                         [session['uid']])
             matches = curs.fetchall()
+
+            #query to fetch student's top choices
             curs.execute('''select course, courseRank, name from chooses inner join courses where student=%s and course=courseid''', [session['uid']])
             choices = curs.fetchall()
             print(matches)
             print(choices)
+            #render dashboard for student with all 5 top courses displayed in order
             try:
                 return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'], 
                                         course1 = choices[0]['course'], course2 = choices[1]['course'], course3=choices[2]['course'], 
                                         course4=choices[3]['course'], course5=choices[4]['course'], course1name=choices[0]['name'],
                                         course2name=choices[1]['name'], course3name=choices[2]['name'], course4name=choices[3]['name'],
                                         course5name=choices[4]['name'], matches=matches)
+            #if no courses have been chosen yet, will display empty set of 5 cards with 'CS'
             except:
                 return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'])
         if status == 'PROFESSOR':
+            #query to fetch dictionary of courses this professor teaches (ie courses they added to the database)
             curs.execute('''select courseid, name from courses inner join teaches where courses.courseid=teaches.course and professor=%s''',
                         [session['uid']])
             teaches = curs.fetchall()
@@ -118,6 +124,7 @@ def dashboard(status):
     else:
         return
 
+#route to either get preference information from users on get, or add it to the database on post
 @app.route('/preferences/', methods=['GET', 'POST'])
 def preferences():
     conn = dbi.connect()
@@ -125,15 +132,16 @@ def preferences():
     uid = session['uid']
     if request.method == 'GET':
         print(session['uid'])
+        #query to get all courses and display as options for preferences form
         curs.execute('''select * from courses''')
         rows = curs.fetchall()
-        #rows = course.viewCourses(conn) --> same issue as above
         return render_template('course_preferences.html', rows=rows)
     else:
-        #insert query to input rank info into database
+        #query to input rank info into database
         yearDict = {'2022':500, '2023':400, '2024':300, '2025':200} #update each year
         curs.execute('''update user set classYear = %s where uid = %s''', [request.form['classYear'], uid])
         conn.commit()
+        #query to fetch student class years
         curs.execute('''select classYear from user where uid = %s''', [uid])
         tokens = yearDict[curs.fetchone()['classYear']]
         course1= int(request.form['course1'])
@@ -147,6 +155,7 @@ def preferences():
         weight4= int(request.form['weight4'])
         weight5= int(request.form['weight5'])
         weights = [weight1,weight2,weight3,weight4,weight5]
+        #make sure that student has put their course weights in descending order (gave rank 1 the most points, didn't give 2 the same weight)
         courseSet = {course1, course2, course3, course4, course5}
         for i in range(4):
             if weights[i] < weights[i+1]:
@@ -154,6 +163,7 @@ def preferences():
                 break
             else: 
                 inOrder= True
+        #check to make sure course weights add up to 500
         sum500 = weight1 + weight2 + weight3 + weight4 + weight5
         if inOrder == False or sum500 != 500 or len(courseSet) != 5:
             if not inOrder: 
@@ -166,6 +176,7 @@ def preferences():
             rows = curs.fetchall()
             return render_template('course_preferences.html', rows=rows)
 
+        #queries to insert student preference information into chooses table in database
         curs.execute('''insert into chooses (student, course, courseRank, courseWeight, tokens)
                         values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
                         [uid, course1, 1, weight1, tokens, course1, weight1, tokens])
@@ -182,6 +193,7 @@ def preferences():
                         values (%s, %s, %s, %s, %s) on duplicate key update course = %s, courseWeight = %s, tokens = %s''', 
                         [uid, course5, 5, weight5, tokens, course5, weight5, tokens])
         conn.commit()
+        #query to get the average course weight for each course and store it in the courses table
         for i in courseSet:
             curs.execute('''select avg(courseWeight) as average from chooses where course = %s''', i)
             cursor = curs.fetchone()
@@ -191,36 +203,34 @@ def preferences():
         conn.commit()
         return redirect(url_for('dashboard', status='STUDENT'))
 
+#route to display the detail course page for user, depending on student or professor (professors can add courses)
 @app.route('/course/<status>/<courseid>/', methods=['GET', 'POST'])
 def course(status, courseid):
     print(session['uid'])
     print(session['status'])
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
+
+    #query to select course information for the course in question
     curs.execute('''select * from courses where courseid = %s''',[courseid])
     courseInfo = curs.fetchone()
     print(courseInfo)
 
+    #query to select all students that have been matched to this course
     curs.execute('''select * from user where uid in (select uid from assignments where course=%s)''',[courseid])
     students = curs.fetchall()
 
+    #query for fileupload, get the file that has been uploaded for the course and assign url to src for template
     curs.execute('''select filename from courses where courseid=%s''', [courseid])
     syllabus = curs.fetchone()
     syllabus_src = url_for('syllabus', courseid=courseid)
-    #courseInfo = course.chooseCourse(conn, courseid) --> same
-    #students = course.getStudents(conn, courseid) --> same
 
     if status == 'STUDENT':
-        return render_template('courseDetail.html', courseInfo=courseInfo, students=students, syllabus_src=syllabus_src)
+        return render_template('courseDetail.html', courseInfo=courseInfo, syllabus_src=syllabus_src)
     elif status == 'PROFESSOR':
         return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students, syllabus_src=syllabus_src)
-    #courseInfo = courses.getCourseInfo(courseid)
-    #select course info
-    #return render_template('prof_courseDetail.html', courseInfo=courseInfo)
 
-#HARDCODING GLOBAL UID VARIABLE FOR TESTING PURPOSES, IGNORE WHEN WE IMPLEMENT LOGINS + SESSIONS
-#uid = 123
-
+#function for file upload, process courseid and return the url for the syllabus/materials uploaded for it
 @app.route('/syllabus/<courseid>')
 def syllabus(courseid):
     conn = dbi.connect()
@@ -237,6 +247,7 @@ def syllabus(courseid):
     except:
         return ("No syllabus yet. Sorry about that!")
 
+#route for professors to add a new course, on get render form and on post store info in database
 @app.route('/add/', methods=['GET', 'POST'])
 def add():
     if request.method == 'GET':
@@ -247,17 +258,20 @@ def add():
         try:
             conn = dbi.connect()
             curs = dbi.dict_cursor(conn)
+            #get inputs from the form
             number = request.form['number']
             title = request.form['title']
             capacity = int(request.form['capacity'])
             waitlistCap = int(request.form['waitlistCap'])
             description = request.form['description']
             profID = session['uid']
+            #query to insert form inputs into the database, for now we will ignore duplicate entries
             curs.execute('''insert ignore into courses (courseid, name, capacity, waitlistCap, description) values (%s, %s, %s, %s, %s)''',
                             [number, title, capacity, waitlistCap, description])
             #caveat: here we will assume that if a professor is adding a course to the database, they themselves teach it
             curs.execute('''insert into teaches (professor, course) values (%s, %s)''',[profID, number])
             conn.commit()
+            #file upload: if the course has a file attached, upload it to the uploads folder 
             if request.files['courseFile']:
                 try:
                     f = request.files['courseFile']
@@ -275,9 +289,10 @@ def add():
                     flash('Upload failed {why}'.format(why=err))
             return redirect(url_for('course', status='PROFESSOR', courseid=number))
         except:
-            flash('Oh no! That course already exists. Enter a different one:') #TODO: change error message
+            flash('Oh no! That course already exists. Enter a different one:')
             return render_template('prof_addCourseForm.html')
 
+#route to connect algorithm in algorithm.py with application
 @app.route('/algorithm/', methods=['GET'])
 def algorithm():
     conn = dbi.connect()
