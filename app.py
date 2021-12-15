@@ -274,15 +274,20 @@ def add():
             #file upload: if the course has a file attached, upload it to the uploads folder 
             if request.files['courseFile']:
                 try:
+                    #create an additional random seq to add to filename so users can upload multiple files
+                    addon = [ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ]
                     f = request.files['courseFile']
                     user_filename = f.filename
                     ext = user_filename.split('.')[-1]
-                    filename = secure_filename('{}.{}'.format(session['uid'],ext))
+                    filename = secure_filename('{}{}.{}'.format(session['uid'], addon, ext))
                     pathname = os.path.join(app.config['UPLOADS'],filename)
                     f.save(pathname)
                     conn = dbi.connect()
                     curs = dbi.dict_cursor(conn)
-                    curs.execute('''update courses set filename = %s where courseid=%s''', 
+                    curs.execute('''update courses set filename = %s where courseid= %s''', 
                                 [filename, number])
                     conn.commit()
                 except Exception as err:
