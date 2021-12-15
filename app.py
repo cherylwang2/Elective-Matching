@@ -275,6 +275,21 @@ def add():
             flash('Oh no! That course already exists. Enter a different one:') #TODO: change error message
             return render_template('prof_addCourseForm.html')
 
+@app.route('/algorithm/', methods=['POST'])
+def algorithm():
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select * from chooses inner join courses on (chooses.course = courses.courseid)
+    order by chooses.uid ASC and courseRank ASC''')
+    courses = curs.fetchall()
+    curs.execute('''select count(student) from chooses''')
+    students = curs.fetchone()['count(student']
+    length = students * 5
+    lists = algorithm.create_Ineq(chooses, students, length)
+    solSet = algorithm.LP_det_avg(chooses, students, length)
+    algorithm.readSolutionSet(solSet, conn)
+    return redirect(url_for('preferences'))
+
 @app.before_first_request
 def init_db():
     dbi.cache_cnf()
