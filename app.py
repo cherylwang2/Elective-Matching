@@ -56,7 +56,7 @@ def logged_in():
     curs = dbi.dict_cursor(conn)
     curs.execute('''insert into user (uid, name) values (%s, %s) on duplicate key update uid=uid''', [uid, session['CAS_ATTRIBUTES']['cas:givenName']])
     conn.commit()
-    if session['CAS_ATTRIBUTES']['cas:isStudent'] and uid != "cw5": #to test for professor pages, add a statement saying and uid != youruidhere
+    if session['CAS_ATTRIBUTES']['cas:isStudent']: #to test for professor pages, add a statement saying and uid != youruidhere
         session['status'] = 'STUDENT'
         return redirect(url_for('dashboard', status='STUDENT'))
     elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
@@ -93,16 +93,19 @@ def dashboard(status):
         print(session['status'])
         if status == 'STUDENT':
             #query to fetch course assignments/match suggestions missing
-
+            curs.execute('''select course, name from assignments inner join courses where course=courses.courseid and uid=%s''',
+                        [session['uid']])
+            matches = curs.fetchall()
             curs.execute('''select course, courseRank, name from chooses inner join courses where student=%s and course=courseid''', [session['uid']])
             choices = curs.fetchall()
+            print(matches)
             print(choices)
             try:
                 return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'], 
                                         course1 = choices[0]['course'], course2 = choices[1]['course'], course3=choices[2]['course'], 
                                         course4=choices[3]['course'], course5=choices[4]['course'], course1name=choices[0]['name'],
                                         course2name=choices[1]['name'], course3name=choices[2]['name'], course4name=choices[3]['name'],
-                                        course5name=choices[4]['name'])
+                                        course5name=choices[4]['name'], matches=matches)
             except:
                 return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'])
         if status == 'PROFESSOR':

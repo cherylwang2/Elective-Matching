@@ -40,7 +40,7 @@ h1 {
     color: #084484;
 }
 
-h2, h3, h4, .courses a {
+h2, h3, h4, .courses a, .matched a{
     color: #084484;
 }
     
@@ -94,14 +94,14 @@ nav li.right {
     border-radius: 20px;
 }
 
-.matches .col {
+.matched .col {
     text-align: center;
     margin: 3%;
     padding: 10%;
     background-color: #c9c9c9;
 }
 
-.courses .col {
+.courses .col, .matched .col{
     text-align: center;
     margin: 1%;
     padding: 3%;
@@ -116,11 +116,11 @@ a:hover{
     text-decoration: none;
 }
 
-.courses a {
+.courses a, .matched a {
     font-size: 115%;
 }
 
-button:hover, button:focus, nav a:hover, nav a:focus, .courses a:hover {
+button:hover, button:focus, nav a:hover, nav a:focus, .courses a:hover, .matched a:hover {
     text-decoration: none;
     color: #c9c9c9;
     background-color: #084484;

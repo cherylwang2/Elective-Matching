@@ -5,16 +5,14 @@
 
 <h3>Your Matches:</h3>
 <div class="container">
-    <div class="matches row">
-      <div class="col">
-        {{match1}}
-      </div>
-      <div class="col">
-        {{match2}}
-      </div>
-      <div class="col">
-        {{match3}}
-      </div>
+    <div class="matched row">
+      {% for match in matches %}
+      <a class="col" href="{{url_for('course', status=status, courseid=match['course'])}}">
+        <div>
+          CS {{match['course']}}<br>{{match['name']}}
+        </div>
+      </a>
+      {% endfor %}  
     </div>
   </div>
 
