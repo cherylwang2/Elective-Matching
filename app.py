@@ -283,7 +283,7 @@ def algorithm():
     order by chooses.uid ASC and courseRank ASC''')
     courses = curs.fetchall()
     curs.execute('''select count(student) from chooses''')
-    students = curs.fetchone()['count(student']
+    students = curs.fetchone()['count(student)']
     length = students * 5
     lists = algorithm.create_Ineq(chooses, students, length)
     solSet = algorithm.LP_det_avg(chooses, students, length)
