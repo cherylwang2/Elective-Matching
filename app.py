@@ -280,8 +280,8 @@ def algorithm():
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     curs.execute('''select * from chooses inner join courses on (chooses.course = courses.courseid)
-    order by chooses.uid ASC and courseRank ASC''')
-    courses = curs.fetchall()
+    order by chooses.uid, courseRank''')
+    chooses = curs.fetchall()
     curs.execute('''select count(student) from chooses''')
     students = int(curs.fetchone()['count(student)'])
     length = students * 5
