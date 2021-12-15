@@ -2,17 +2,8 @@
 from scipy.optimize import linprog
 import numpy as np
 import cs304dbi as dbi
-
-test = [{'student': 1, 'course': 304, 'courseRank': 1, 'courseWeight': 300, 'tokens':300, 'capacity':1},
-        {'student': 1, 'course': 305, 'courseRank': 2, 'courseWeight': 350, 'tokens':300, 'capacity':2},
-        {'student': 1, 'course': 306, 'courseRank': 3, 'courseWeight': 1, 'tokens':300, 'capacity':1},
-        {'student': 1, 'course': 330, 'courseRank': 4, 'courseWeight': 10, 'tokens':300, 'capacity':2},
-        {'student': 1, 'course': 320, 'courseRank': 5, 'courseWeight': 15, 'tokens':300, 'capacity':1},
-        {'student': 2, 'course': 304, 'courseRank': 1, 'courseWeight': 300, 'tokens':400, 'capacity':1},
-        {'student': 2, 'course': 306, 'courseRank': 2, 'courseWeight': 1, 'tokens':400, 'capacity':1},
-        {'student': 2, 'course': 305, 'courseRank': 3, 'courseWeight': 350, 'tokens':400, 'capacity':2},
-        {'student': 2, 'course': 315, 'courseRank': 4, 'courseWeight': 10, 'tokens':400, 'capacity':3},
-        {'student': 2, 'course': 320, 'courseRank': 5, 'courseWeight': 15, 'tokens':400, 'capacity':1}]
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify)
 
 #curs.execute('''select * from chooses inner join courses on chooses.course = courses.courseid order by chooses.uid ASC and courseRank ASC''')
 
@@ -71,9 +62,9 @@ def LP_det_avg(chooses, students, length):
         for j in range(5):
             print(index)
             c[index] = x
-            x += 0.1
+            x += 0.25
             index += 1
-    LPSolution = linprog(c, A_ub=A_ineq, b_ub=B_ineq, method='simplex')
+    LPSolution = linprog(c, A_ub=A_ineq, b_ub=B_ineq, method='interior-point')
     LPSum = 0
     totalSeatsOffered = 0
     solutionSet = []
@@ -106,3 +97,4 @@ def readSolutionSet(solSet, conn):
             course = i[1]
             curs.execute('''insert into assignments (uid, course) values (%s, %s)''', [uid, course])
             conn.commit()
+    flash('Students assigned successfully!')
