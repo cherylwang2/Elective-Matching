@@ -5,10 +5,7 @@ import cs304dbi as dbi
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
 
-#curs.execute('''select * from chooses inner join courses on chooses.course = courses.courseid order by chooses.uid ASC and courseRank ASC''')
-
-#created from inner join chooses with courses on chooses.course = courses.courseid
-def create_Ineq(chooses, students, length): #make sure chooses sorts students by ASC and rank by ASC
+def create_Ineq(chooses, students, length):
     #assumes each student chooses 5 classes
     '''chooses is curs object being returned, students is num students, length is length of array'''
     print(chooses)
@@ -38,7 +35,7 @@ def create_Ineq(chooses, students, length): #make sure chooses sorts students by
             index2 += 1
         A_ineq.append(emptyList)
         B_ineq.append(-1)
-    for k in indexDict:
+    for k in indexDict: #this makes sure capacity is not exceeded
         emptyList = [0 for i in range(length)]
         for i in indexDict[k]:
             emptyList[i] = 1
@@ -62,7 +59,7 @@ def LP_det_avg(chooses, students, length):
         for j in range(5):
             print(index)
             c[index] = x
-            x += 0.25
+            x += 0.25 #incentivizes algorithm to give students their top choice by making latter choices weigh more (minimization problem)
             index += 1
     LPSolution = linprog(c, A_ub=A_ineq, b_ub=B_ineq, method='interior-point')
     LPSum = 0
