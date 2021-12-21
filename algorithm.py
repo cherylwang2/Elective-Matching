@@ -88,6 +88,8 @@ def LP_det_avg(chooses, students, length):
 
 def readSolutionSet(solSet, conn):
     curs = dbi.dict_cursor(conn)
+    curs.execute('''delete from assignments''')
+    conn.commit()
     for i in solSet:
         if i[2] == 1:
             uid = i[0]
