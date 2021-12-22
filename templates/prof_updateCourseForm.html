@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-lg">
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item nav-link"><a href="{{url_for('algorithm')}}" id="alg_button">Click to run the algorithm!</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('dashboard', status='PROFESSOR')}}">HOME</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('add')}}">ADD A COURSE</a></li>
+    <li class="nav-item nav-link"><a href="{{url_for('view', status='PROFESSOR')}}">VIEW ALL COURSES</a></li>
+  </ul>
+</nav>
+{% endblock %}
+
+{% block main_content %}
+<h1>Alter an Existing Course Entry</h1><br>
+
+<form method=post action="{{ url_for('update', courseid=row['courseid']) }}" enctype="multipart/form-data">
+  <fieldset>
+    <table>
+    <tr><td><label for="number"> Enter the course number (ex 304):</label></td>
+        <td><input id="number" type="text" name="number" value="{{row['courseid']}}"></td></tr>
+    <tr><td><label for="title">Enter the course title:</label></td>
+        <td><input id="title" type="text" name="title" value="{{row['name']}}"></td></tr>
+    <tr><td><label for="capacity">Enter the course capacity:</label></td>
+        <td><input id="capacity" type="text" name="capacity" value="{{row['capacity']}}"></td></tr>
+    <tr><td><label for="waitlistCap">Enter the waitlist capacity:</label></td>
+        <td><input id="waitlistCap" type="text" name="waitlistCap" value="{{row['waitlistCap']}}"></td></tr>
+    <tr><td><label for="description">Enter a brief course description (max 1000 characters):</label></td>
+        <td><textarea id="description" rows="5" cols="60" name="description">{{row['description']}}</textarea></td></tr>
+    <tr><td><label for="courseFile">Upload course materials:</label></td>
+        <td><input id="courseFile" type="file" name="courseFile" value="{{row['filename']}}"></td></tr>
+    </table>
+    </fieldset>
+
+    <p> <input type='submit' value='Update Course'> </p>
+
+</form>
+
+{% endblock %}

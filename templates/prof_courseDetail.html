@@ -14,14 +14,16 @@
 {% block main_content %}
 <div class="row">
 <h1>{{courseInfo['name']}}</h1><br>
-<button class="inline_button" type="button">Edit Course</button> <!--does not work yet-->
+&nbsp;<form method="get" action="{{url_for('update', courseid=courseInfo['courseid'])}}">
+  <input type="submit" value="Edit Course" class="inline_button">
+</form>
+<!-- <button class="inline_button" type="button">Edit Course</button> does not work yet
 <form method="post" action="" enctype="multipart/form-data">
   <button><label>Choose course materials<input type="file" name="courseFile" style="display:none"></label></button>
   <input type="submit" value="Upload" class="submit_button">
 </form>
-</div>
+</div> -->
 
-<!-- leaving this here for now because we don't have descriptions in database yet... -->
 <p>{{courseInfo['description']}}</p>
 
 <h4>Students Matched to the Course:</h4>

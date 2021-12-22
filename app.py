@@ -292,9 +292,10 @@ def add():
             waitlistCap = int(request.form['waitlistCap'])
             description = request.form['description']
             profID = session['uid']
-            #query to insert form inputs into the database, for now we will ignore duplicate entries
+            #query to insert form inputs into the database, we will ignore duplicate entries and instead show update
             curs.execute('''insert ignore into courses (courseid, name, capacity, waitlistCap, description) values (%s, %s, %s, %s, %s)''',
                             [number, title, capacity, waitlistCap, description])
+            
             #caveat: here we will assume that if a professor is adding a course to the database, they themselves teach it
             curs.execute('''select courseid from courses''')
             allCourses = curs.fetchall()['courseid']
@@ -303,8 +304,8 @@ def add():
                 curs.execute('''insert into teaches (professor, course) values (%s, %s)''',[profID, number])
                 conn.commit()
             else:
-                flash('Oh no! That course already exists. Enter a different one:')
-                return render_template('prof_addCourseForm.html')
+                flash('Oh no! That course already exists. Alter the existing course listing:')
+                return redirect (url_for('update', courseid=number))
             #file upload: if the course has a file attached, upload it to the uploads folder 
             if request.files['courseFile']:
                 try:
@@ -328,8 +329,48 @@ def add():
                     flash('Upload failed {why}'.format(why=err))
             return redirect(url_for('course', courseid=number))
         except:
-            flash('Oh no! That course already exists. Enter a different one:')
-            return render_template('prof_addCourseForm.html')
+            flash('Oh no! That course already exists. Alter the existing course listing:')
+            return redirect(url_for('update', courseid=number))
+
+@app.route('/update/<courseid>', methods=['GET', 'POST'])
+def update(courseid):
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+    if request.method == 'GET':
+        curs.execute('''select * from courses where courseid=%s''', [courseid])
+        row = curs.fetchone()
+        return render_template('prof_updateCourseForm.html', row=row)
+    if request.method == 'POST':
+        number = request.form['number']
+        title = request.form['title']
+        capacity = int(request.form['capacity'])
+        waitlistCap = int(request.form['waitlistCap'])
+        description = request.form['description']
+        profID = session['uid']
+        if request.files['courseFile']:
+                try:
+                    #create an additional random seq to add to filename so users can upload multiple files
+                    addon = [ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ]
+                    f = request.files['courseFile']
+                    user_filename = f.filename
+                    ext = user_filename.split('.')[-1]
+                    filename = secure_filename('{}{}.{}'.format(session['uid'], addon, ext))
+                    pathname = os.path.join(app.config['UPLOADS'],filename)
+                    f.save(pathname)
+                    conn = dbi.connect()
+                    curs = dbi.dict_cursor(conn)
+                    curs.execute('''update courses set filename = %s where courseid= %s''', 
+                                [filename, number])
+                    conn.commit()
+                except Exception as err:
+                    flash('Upload failed {why}'.format(why=err))
+        curs.execute('''update courses set name=%s, capacity=%s, waitlistCap=%s, description=%s, filename=%s where courseid=%s''',
+                    [title, capacity, waitlistCap, description, filename, number])
+        conn.commit()
+    return redirect(url_for('course', courseid=number))
 
 #route to connect algorithm in algorithm.py with application
 @app.route('/algorithm/', methods=['GET'])
