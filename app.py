@@ -59,7 +59,7 @@ def logged_in():
     conn.commit()
     #NO MATTER WHAT the user clicks, redirect them to page based off of CAS attributes 
     #safety measure, don't want students to be signing in as professors and having extra permissions
-    if session['CAS_ATTRIBUTES']['cas:isStudent']: #to test for professor pages, add a statement saying 'and uid != youruidhere'
+    if session['CAS_ATTRIBUTES']['cas:isStudent'] and uid != 'tg2': #to test for professor pages, add a statement saying 'and uid != youruidhere'
         session['status'] = 'STUDENT'
     elif session['CAS_ATTRIBUTES']['cas:isFaculty']:
         session['status'] = 'PROFESSOR'
@@ -84,15 +84,42 @@ def view(status):
     rows = curs.fetchall()
     return render_template('view_all.html', rows=rows, status=session['status'])
 
+@app.route('/form-process/')
+def formProcess():
+    error_msg = ""
+
+    query = request.args.get('query')
+    kind = request.args.get('kind')
+    conn = dbi.connect()
+    curs = dbi.dict_cursor(conn)
+
+    if kind == 'number':
+        curs.execute('''select * from courses where courseid like %s''', "%" + query+ "%")
+        rows=curs.fetchall()
+        print(rows)
+        if len(rows) == 1:
+            return redirect(url_for('course', courseid=rows[0]['courseid']))
+    elif kind == 'name':
+        curs.execute('''select * from courses where name like %s''', "%" + query + "%")
+        rows=curs.fetchall()
+        print(rows)
+        if len(rows) == 1:
+            return redirect(url_for('course', courseid=rows[0]['courseid']))
+    if len(rows) == 0:
+        flash("Sorry, no {} found".format(kind))
+
+    return render_template("view_all.html", rows=rows, status=session['status'])
+
+
 #route to render dashboard for students and professors
-@app.route('/dashboard/<status>/', methods=["GET", "POST"])
-def dashboard(status):
+@app.route('/dashboard/', methods=["GET", "POST"])
+def dashboard():
     conn = dbi.connect()
     curs = dbi.dict_cursor(conn)
     if request.method == 'GET':
         print(session['uid'])
         print(session['status'])
-        if status == 'STUDENT':
+        if session['status'] == 'STUDENT':
             #query to fetch course assignments/match suggestions
             curs.execute('''select course, name from assignments inner join courses where course=courses.courseid and uid=%s''',
                         [session['uid']])
@@ -105,21 +132,21 @@ def dashboard(status):
             print(choices)
             #render dashboard for student with all 5 top courses displayed in order
             try:
-                return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'], 
+                return render_template('dashboard.html', name=session['CAS_ATTRIBUTES']['cas:givenName'], 
                                         course1 = choices[0]['course'], course2 = choices[1]['course'], course3=choices[2]['course'], 
                                         course4=choices[3]['course'], course5=choices[4]['course'], course1name=choices[0]['name'],
                                         course2name=choices[1]['name'], course3name=choices[2]['name'], course4name=choices[3]['name'],
                                         course5name=choices[4]['name'], matches=matches)
             #if no courses have been chosen yet, will display empty set of 5 cards with 'CS'
             except:
-                return render_template('dashboard.html', status='STUDENT', name=session['CAS_ATTRIBUTES']['cas:givenName'])
-        if status == 'PROFESSOR':
+                return render_template('dashboard.html', name=session['CAS_ATTRIBUTES']['cas:givenName'])
+        if session['status'] == 'PROFESSOR':
             #query to fetch dictionary of courses this professor teaches (ie courses they added to the database)
             curs.execute('''select courseid, name from courses inner join teaches where courses.courseid=teaches.course and professor=%s''',
                         [session['uid']])
             teaches = curs.fetchall()
             print(teaches)
-            return render_template('prof_dashboard.html', status='PROFESSOR', name=session['CAS_ATTRIBUTES']['cas:givenName'],
+            return render_template('prof_dashboard.html', name=session['CAS_ATTRIBUTES']['cas:givenName'],
                                     teaches=teaches)
     else:
         return
@@ -204,8 +231,8 @@ def preferences():
         return redirect(url_for('dashboard', status='STUDENT'))
 
 #route to display the detail course page for user, depending on student or professor (professors can add courses)
-@app.route('/course/<status>/<courseid>/', methods=['GET', 'POST'])
-def course(status, courseid):
+@app.route('/course/<courseid>/', methods=['GET', 'POST'])
+def course(courseid):
     print(session['uid'])
     print(session['status'])
     conn = dbi.connect()
@@ -225,9 +252,9 @@ def course(status, courseid):
     syllabus = curs.fetchone()
     syllabus_src = url_for('syllabus', courseid=courseid)
 
-    if status == 'STUDENT':
+    if session['status'] == 'STUDENT':
         return render_template('courseDetail.html', courseInfo=courseInfo, syllabus_src=syllabus_src)
-    elif status == 'PROFESSOR':
+    elif session['status'] == 'PROFESSOR':
         return render_template('prof_courseDetail.html', courseInfo=courseInfo, students=students, syllabus_src=syllabus_src)
 
 #function for file upload, process courseid and return the url for the syllabus/materials uploaded for it
@@ -269,8 +296,15 @@ def add():
             curs.execute('''insert ignore into courses (courseid, name, capacity, waitlistCap, description) values (%s, %s, %s, %s, %s)''',
                             [number, title, capacity, waitlistCap, description])
             #caveat: here we will assume that if a professor is adding a course to the database, they themselves teach it
-            curs.execute('''insert into teaches (professor, course) values (%s, %s)''',[profID, number])
-            conn.commit()
+            curs.execute('''select courseid from courses''')
+            allCourses = curs.fetchall()['courseid']
+
+            if number not in allCourses:
+                curs.execute('''insert into teaches (professor, course) values (%s, %s)''',[profID, number])
+                conn.commit()
+            else:
+                flash('Oh no! That course already exists. Enter a different one:')
+                return render_template('prof_addCourseForm.html')
             #file upload: if the course has a file attached, upload it to the uploads folder 
             if request.files['courseFile']:
                 try:
@@ -292,7 +326,7 @@ def add():
                     conn.commit()
                 except Exception as err:
                     flash('Upload failed {why}'.format(why=err))
-            return redirect(url_for('course', status='PROFESSOR', courseid=number))
+            return redirect(url_for('course', courseid=number))
         except:
             flash('Oh no! That course already exists. Enter a different one:')
             return render_template('prof_addCourseForm.html')

@@ -7,7 +7,7 @@
 <div class="container">
     <div class="matched row">
       {% for match in matches %}
-      <a class="col" href="{{url_for('course', status=status, courseid=match['course'])}}">
+      <a class="col" href="{{url_for('course', courseid=match['course'])}}">
         <div>
           CS {{match['course']}}<br>{{match['name']}}
         </div>
@@ -19,27 +19,27 @@
 <h3>Your Top 5 Courses:</h3>
 <div class="container">
   <div class="courses row">
-  <a class="col" href="{{url_for('course', status=status, courseid=course1)}}">
+  <a class="col" href="{{url_for('course', courseid=course1)}}">
     <div>
       CS {{course1}}<br>{{course1name}}
     </div>
   </a>
-  <a class="col" href="{{url_for('course', status=status, courseid=course2)}}">
+  <a class="col" href="{{url_for('course', courseid=course2)}}">
     <div>
       CS {{course2}}<br>{{course2name}}
     </div>
   </a>
-  <a class="col" href="{{url_for('course', status=status, courseid=course3)}}">
+  <a class="col" href="{{url_for('course', courseid=course3)}}">
     <div>
       CS {{course3}}<br>{{course3name}}
     </div>
   </a>
-  <a class="col" href="{{url_for('course', status=status, courseid=course4)}}">
+  <a class="col" href="{{url_for('course', courseid=course4)}}">
     <div>
       CS {{course4}}<br>{{course4name}}
     </div>
   </a>
-  <a class="col" href="{{url_for('course', status=status, courseid=course5)}}">
+  <a class="col" href="{{url_for('course', courseid=course5)}}">
     <div>
       CS {{course5}}<br>{{course5name}}
     </div>
